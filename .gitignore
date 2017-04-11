@@ -6,6 +6,8 @@ data/working/**
 data/output/**
 !data/output/*.ini
 
+misc/stanford-parser
+
 # Created by https://www.gitignore.io/api/python
 
 ### Python ###

@@ -16,9 +16,9 @@ sed -e 's/malloc\.h/malloc\/malloc.h/' evalb.c > new_evalb.c
 mv new_evalb.c evalb.c
 make
 
-# Install evalb under rnng
+# Install evalb
 cd "$WORK_DIR"
-mv "$TMP_DIR/EVALB" "$SCRIPT_DIR/rnng/"
+mv "$TMP_DIR/EVALB" "$SCRIPT_DIR/"
 
 # Cleanup
 rm "$TMP_DIR/EVALB.tgz"

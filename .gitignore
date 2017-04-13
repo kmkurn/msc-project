@@ -6,7 +6,6 @@ data/working/**
 data/output/**
 !data/output/*.ini
 
-notes.org
 misc/stanford-parser
 misc/EVALB
 

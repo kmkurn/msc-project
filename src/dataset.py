@@ -6,7 +6,7 @@ import re
 
 from torch.utils.data import Dataset
 
-from src.utils import load_args, dump_args
+from src.utils import load_args, dump_args, augment_parser
 
 
 class PennTreebank:
@@ -126,17 +126,11 @@ if __name__ == '__main__':
                         help='use non-merged (without POS tags) version')
     parser.add_argument('-n', '--max-sentences', type=int, default=None,
                         help='max number of sentences')
-    parser.add_argument('--dump-args', help='where to dump script arguments')
-    parser.add_argument('--load-args', help='load script arguments from this file')
+    augment_parser(parser)
     args = parser.parse_args()
 
-    if args.dump_args is not None:
-        attrs = ['which', 'version', 'corrected', 'merged', 'max_sentences']
-        dump_args(args, attrs, args.dump_args)
-
-    if args.load_args is not None:
-        load_args(args, args.load_args,
-                  typecast=dict(max_sentences=lambda x: None if x == 'None' else int(x)))
+    dump_args(args, excludes=['corpus_dir'])
+    load_args(args, typecast=dict(version=lambda x: x))
 
     ptb = PennTreebank(args.corpus_dir, which=args.which, version=args.version,
                        corrected=args.corrected, merged=args.merged,

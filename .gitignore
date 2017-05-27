@@ -1,10 +1,10 @@
-# Ignore data, except script argument dump files
+# Ignore data
 data/input/**
 !data/input/.gitkeep
 data/working/**
 !data/working/.gitkeep
 data/output/**
-!data/output/*.ini
+!data/output/.gitkeep
 
 misc/stanford-parser
 misc/EVALB

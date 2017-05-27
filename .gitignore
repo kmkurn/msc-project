@@ -9,6 +9,8 @@ data/output/**
 misc/stanford-parser
 misc/EVALB
 
+notes.org
+
 # Created by https://www.gitignore.io/api/python
 
 ### Python ###

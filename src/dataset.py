@@ -95,6 +95,46 @@ class PennTreebank:
         return islice(self._get_iterator(), self._max_num_sentences)
 
 
+class IDNTreebank:
+    FILENAME = 'Indonesian_Treebank.bracket'
+    TWO_OR_MORE_SPACES_PROG = re.compile(r'  +')
+    BRACKETED_TOKEN_PROG = re.compile(r'\(([^ ]+)\)')
+
+    def __init__(self, corpus_dir, which='train', split_num=0, max_num_sentences=None):
+        """An iterable class for IDN Treebank corpus.
+
+        Args:
+            corpus_dir (str): Path to IDN treebank corpus directory.
+            which (str): Which dataset to load. Must be one of 'train', 'valid', or 'test'.
+            split_num (int): Split number of the treebank to load. This assumes
+                that the IDN treebank has been split for cross-validation.
+            max_num_sentences (int): Maximum number of sentences to load. If `None` then all
+                sentences will be loaded.
+        """
+        if which not in ['train', 'valid', 'test']:
+            raise ValueError(
+                f'`which` should be one of "train", "valid", or "test". Got "{which}".')
+
+        self.corpus_dir = corpus_dir
+        self.which = which
+        self.split_num = split_num
+        self.max_num_sentences = max_num_sentences
+
+    def _get_iterator(self):
+        filename = os.path.join(self.corpus_dir,
+                                f'{self.FILENAME}.{self.split_num}.{self.which}')
+        with open(filename) as f:
+            for line in f:
+                yield self._preprocess(line.strip())
+
+    def _preprocess(self, line):
+        return self.BRACKETED_TOKEN_PROG.sub(
+            r'\1', self.TWO_OR_MORE_SPACES_PROG.sub(' ', line.expandtabs()))
+
+    def __iter__(self):
+        return islice(self._get_iterator(), self.max_num_sentences)
+
+
 class PennTreebankDataset(Dataset):
     def __init__(self, ptb_iter):
         """Penn Treebank dataset.

@@ -4,14 +4,19 @@ from itertools import islice
 import os
 import re
 
+from nltk.tree import Tree
 from torch.utils.data import Dataset
 
 from src.utils import load_args, dump_args, augment_parser
 
 
 class PennTreebank:
+    NULL_TAG = '-NONE-'
     # Matches one or more spaces between two opening or closing parentheses
-    PROG = re.compile(r'(?<=\() +(?=\()|(?<=\)) +(?=\))')
+    ONE_OR_MORE_SPACES_PROG = re.compile(r'(?<=\() +(?=\()|(?<=\)) +(?=\))')
+    # Matches nonterminal label with grammatical function label, e.g. NP-SBJ, PP-DIR
+    # The first group only matches the nonterminal label, e.g. NP, PP
+    NT_FUNC_LABEL_PROG = re.compile(r'(?<=\()(\w+)-[^ ]+(?= )')
 
     def __init__(self, corpus_dir, which='train', version='3.0', corrected=True, merged=True,
                  max_num_sentences=None):
@@ -90,7 +95,29 @@ class PennTreebank:
 
     def _squeeze_sentence(self, sentence):
         # Remove excess spaces and extra enclosing parenthesis
-        return self.PROG.sub('', sentence)[1:-1]
+        return self.ONE_OR_MORE_SPACES_PROG.sub('', sentence)[1:-1]
+
+    def _strip_grammatical_function_label(self, sentence):
+        return self.NT_FUNC_LABEL_PROG.sub(r'\1', sentence)
+
+    def _remove_empty_categories(self, sentence):
+        t = self._remove_null_elements(Tree.fromstring(sentence))
+        # Convert tree to string and squeeze it into one line
+        return re.sub(r'  +', ' ', re.sub(r'\n', '', str(t)))
+
+    @classmethod
+    def _remove_null_elements(cls, tree):
+        if len(tree) == 1 and isinstance(tree[0], str):
+            return None if tree.label() == cls.NULL_TAG else tree
+        new_children = [cls._remove_null_elements(child) for child in tree]
+        new_children = [x for x in new_children if x is not None]
+        if not new_children:
+            return None
+        return Tree(tree.label(), new_children)
+
+    def _preprocess_sentence(self, sentence):
+        return self._remove_empty_categories(
+            self._strip_grammatical_function_label(self._squeeze_sentence(sentence)))
 
     def _get_iterator(self):
         path = os.path.join(self.corpus_dir, self.version, self.corrected_dir,
@@ -100,7 +127,7 @@ class PennTreebank:
             for filename in sorted(glob.glob(glob_pattern)):
                 with open(filename) as f:
                     lines = (line.rstrip() for line in f if line.rstrip())
-                    yield from (self._squeeze_sentence(sent)
+                    yield from (self._preprocess_sentence(sent)
                                 for sent in self._concat_parsed_sentences(lines))
 
     def __iter__(self):

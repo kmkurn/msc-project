@@ -10,6 +10,9 @@ from src.utils import load_args, dump_args, augment_parser
 
 
 class PennTreebank:
+    # Matches one or more spaces between two opening or closing parentheses
+    PROG = re.compile(r'(?<=\() +(?=\()|(?<=\)) +(?=\))')
+
     def __init__(self, corpus_dir, which='train', version='3.0', corrected=True, merged=True,
                  max_num_sentences=None):
         """An iterable class for Penn Treebank corpus.
@@ -21,15 +24,13 @@ class PennTreebank:
         Args:
             corpus_dir (str): Path to Penn Treebank corpus directory.
             which (str): Which dataset to iterate. Must be one of "train", "valid", or "test".
-                (default: train)
             version (str): Version of Penn Treebank. Must be one of "2.0" or "3.0".
-                (default: 3.0)
-            corrected (bool): Whether to use the corrected version. If False then original
-                version will be used. (default: True)
-            merged (bool): Whether to use the merged version (with POS tags). If False then no
-                POS tag will occur in the parsed sentence. (default: True)
-            max_num_sentences (int): Maximum number of sentences to iterate. If None then no
-                limit will be imposed. (default: None)
+            corrected (bool): Whether to use the corrected version. If `False` then original
+                version will be used.
+            merged (bool): Whether to use the merged version (with POS tags). If `False` then
+                no POS tag will occur in the parsed sentence.
+            max_num_sentences (int): Maximum number of sentences to load. If `None` then all
+                sentences will be loaded.
         """
         if which not in ['train', 'valid', 'test']:
             raise ValueError(
@@ -37,30 +38,39 @@ class PennTreebank:
         if version not in ['2.0', '3.0']:
             raise ValueError(f'`version` should be "2.0" or "3.0". Got "{version}".')
 
-        if which == 'train':
-            self._sections = range(2, 22)
-        elif which == 'valid':
-            self._sections = [24]
-        else:
-            self._sections = [23]
+        self.corpus_dir = corpus_dir
+        self.which = which
+        self.version = version
+        self.corrected = corrected
+        self.merged = merged
+        self.max_num_sentences = max_num_sentences
 
-        if version == '2.0':
-            corrected_dir = ''
-            parsed_dir = 'combined' if merged else 'parsed'
+    @property
+    def sections(self):
+        if self.which == 'train':
+            return range(2, 22)
+        elif self.which == 'valid':
+            return [24]
         else:
-            corrected_dir = 'corrected' if corrected else 'original'
-            if merged:
-                parsed_dir = os.path.join('parsed', 'mrg')
-            else:
-                parsed_dir = os.path.join('parsed', 'prd')
+            return [23]
 
-        self._ext = 'mrg' if merged else 'prd'
-        self._path = os.path.join(
-            corpus_dir, version, corrected_dir, parsed_dir, 'wsj')
-        self._max_num_sentences = max_num_sentences
-        # Matches one or more spaces between two opening or closing parentheses
-        pattern = r'(?<=\() +(?=\()|(?<=\)) +(?=\))'
-        self._prog = re.compile(pattern)
+    @property
+    def corrected_dir(self):
+        if self.version == '2.0':
+            return ''
+        return 'corrected' if self.corrected else 'original'
+
+    @property
+    def parsed_dir(self):
+        if self.version == '2.0':
+            return 'combined' if self.merged else 'parsed'
+        if self.merged:
+            return os.path.join('parsed', 'mrg')
+        return os.path.join('parsed', 'prd')
+
+    @property
+    def ext(self):
+        return 'mrg' if self.merged else 'prd'
 
     def _concat_parsed_sentences(self, sentences):
         buff = []
@@ -80,11 +90,13 @@ class PennTreebank:
 
     def _squeeze_sentence(self, sentence):
         # Remove excess spaces and extra enclosing parenthesis
-        return self._prog.sub('', sentence)[1:-1]
+        return self.PROG.sub('', sentence)[1:-1]
 
     def _get_iterator(self):
-        for sec in self._sections:
-            glob_pattern = os.path.join(self._path, f'{sec:02}', f'*.{self._ext}')
+        path = os.path.join(self.corpus_dir, self.version, self.corrected_dir,
+                            self.parsed_dir, 'wsj')
+        for sec in self.sections:
+            glob_pattern = os.path.join(path, f'{sec:02}', f'*.{self.ext}')
             for filename in sorted(glob.glob(glob_pattern)):
                 with open(filename) as f:
                     lines = (line.rstrip() for line in f if line.rstrip())
@@ -92,7 +104,7 @@ class PennTreebank:
                                 for sent in self._concat_parsed_sentences(lines))
 
     def __iter__(self):
-        return islice(self._get_iterator(), self._max_num_sentences)
+        return islice(self._get_iterator(), self.max_num_sentences)
 
 
 class IDNTreebank:

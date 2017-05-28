@@ -19,11 +19,9 @@ def dump_args(args, path=None, excludes=None, override_excludes=False):
             `parse_args()` returns.
         path (str): Where the dumped arguments should be saved. If None then
             the path is assumed to be stored in `args.dump_args`.
-            (default: None)
         excludes: Iterable of additional attribute names to exclude from dumping.
-            (default: None)
         override_excludes (bool): Whether to override the excludes list instead of appending
-            to the default one. (default: False)
+            to the default one.
     """
     default_excludes = ['dump_args', 'load_args']
     excludes = default_excludes + ([] if excludes is None else excludes)
@@ -63,11 +61,10 @@ def load_args(obj, path=None, typecast=None):
     Args:
         obj: Target argument namespace object.
         path (str): Path to config file to load. If None then the path will be
-            read from `obj.load_args`. (default: None)
+            read from `obj.load_args`.
         typecast (dict): A dictionary whose keys are attribute names and
             values are unary functions. The function will receive the loaded
             value and should return the new value for the attribute.
-            (default: None)
     """
     if path is None:
         path = obj.load_args

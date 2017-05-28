@@ -167,25 +167,36 @@ class PennTreebankDataset(Dataset):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Fetch sentences from PTB dataset.')
+    parser = ArgumentParser(
+        description='Load sentences from treebank dataset and print to stdout.')
+    parser.add_argument('treebank', choices=['penn', 'idn'], help='treebank corpus to load')
     parser.add_argument('--corpus-dir', required=True, help='path to corpus directory')
     parser.add_argument('--which', choices=['train', 'valid', 'test'], default='train',
-                        help='which dataset (train/valid/test) to fetch')
-    parser.add_argument('--version', choices=['2.0', '3.0'], default='3.0', help='PTB version')
-    parser.add_argument('--no-corrected', action='store_false', dest='corrected',
-                        help='use non-corrected (original) version')
-    parser.add_argument('--no-merged', action='store_false', dest='merged',
-                        help='use non-merged (without POS tags) version')
+                        help='which dataset to load')
     parser.add_argument('-n', '--max-sentences', type=int, default=None,
                         help='max number of sentences')
+    # Penn Treebank specific arguments
+    parser.add_argument('--version', choices=['2.0', '3.0'], default='3.0',
+                        help='corpus version (penn treebank)')
+    parser.add_argument('--no-corrected', action='store_false', dest='corrected',
+                        help='use non-corrected (original) version (penn treebank)')
+    parser.add_argument('--no-merged', action='store_false', dest='merged',
+                        help='use non-merged (without POS tags) version (penn treebank)')
+    # IDN Treebank specific arguments
+    parser.add_argument('--split-num', type=int, default=0, help='split number (idn treebank)')
     augment_parser(parser)
     args = parser.parse_args()
 
     dump_args(args, excludes=['corpus_dir'])
     load_args(args, typecast=dict(version=lambda x: x))
 
-    ptb = PennTreebank(args.corpus_dir, which=args.which, version=args.version,
-                       corrected=args.corrected, merged=args.merged,
-                       max_num_sentences=args.max_sentences)
-    for line in ptb:
+    if args.treebank == 'penn':
+        treebank = PennTreebank(args.corpus_dir, which=args.which, version=args.version,
+                                corrected=args.corrected, merged=args.merged,
+                                max_num_sentences=args.max_sentences)
+    else:
+        treebank = IDNTreebank(args.corpus_dir, which=args.which, split_num=args.split_num,
+                               max_num_sentences=args.max_sentences)
+
+    for line in treebank:
         print(line)

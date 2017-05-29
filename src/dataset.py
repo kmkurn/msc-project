@@ -77,6 +77,21 @@ class PennTreebank:
     def ext(self):
         return 'mrg' if self.merged else 'prd'
 
+    def _get_iterator(self):
+        path = os.path.join(self.corpus_dir, self.version, self.corrected_dir,
+                            self.parsed_dir, 'wsj')
+        for sec in self.sections:
+            glob_pattern = os.path.join(path, f'{sec:02}', f'*.{self.ext}')
+            for filename in sorted(glob.glob(glob_pattern)):
+                with open(filename) as f:
+                    lines = (line.rstrip() for line in f if line.rstrip())
+                    yield from (self._preprocess_sentence(sent)
+                                for sent in self._concat_parsed_sentences(lines))
+
+    def _preprocess_sentence(self, sentence):
+        return self._remove_empty_categories(
+            self._strip_grammatical_function_label(self._squeeze_sentence(sentence)))
+
     def _concat_parsed_sentences(self, sentences):
         buff = []
         bracket_cnt = 0
@@ -114,21 +129,6 @@ class PennTreebank:
         if not new_children:
             return None
         return Tree(tree.label(), new_children)
-
-    def _preprocess_sentence(self, sentence):
-        return self._remove_empty_categories(
-            self._strip_grammatical_function_label(self._squeeze_sentence(sentence)))
-
-    def _get_iterator(self):
-        path = os.path.join(self.corpus_dir, self.version, self.corrected_dir,
-                            self.parsed_dir, 'wsj')
-        for sec in self.sections:
-            glob_pattern = os.path.join(path, f'{sec:02}', f'*.{self.ext}')
-            for filename in sorted(glob.glob(glob_pattern)):
-                with open(filename) as f:
-                    lines = (line.rstrip() for line in f if line.rstrip())
-                    yield from (self._preprocess_sentence(sent)
-                                for sent in self._concat_parsed_sentences(lines))
 
     def __iter__(self):
         return islice(self._get_iterator(), self.max_num_sentences)

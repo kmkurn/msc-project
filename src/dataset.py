@@ -139,8 +139,8 @@ class PennTreebank:
 
 class IDNTreebank:
     FILENAME = 'Indonesian_Treebank.bracket'
-    TWO_OR_MORE_SPACES_PROG = re.compile(r'  +')
-    BRACKETED_TOKEN_PROG = re.compile(r'\(([^ ]+)\)')
+    NULL_ELEMS = ['*T*', '0', '*U*', '*?*', '*NOT*', '*RNR*', '*ICH*', '*EXP*', '*PPA*']
+    WORD_UNIT_PROG = re.compile(r'\(([^\(\)]+)\)')
 
     def __init__(self, corpus_dir, which='train', split_num=0, max_num_sentences=None):
         """An iterable class for IDN Treebank corpus.
@@ -167,11 +167,71 @@ class IDNTreebank:
                                 f'{self.FILENAME}.{self.split_num}.{self.which}')
         with open(filename) as f:
             for line in f:
-                yield self._preprocess(line.strip())
+                yield self._preprocess_line(line)
 
-    def _preprocess(self, line):
-        return self.BRACKETED_TOKEN_PROG.sub(
-            r'\1', self.TWO_OR_MORE_SPACES_PROG.sub(' ', line.expandtabs()))
+    @classmethod
+    def _preprocess_line(cls, line):
+        s = cls._squeeze_line(line.replace('\t', ''))
+        t = cls._strip_function_labels(cls._to_tree(s))
+        t = cls._remove_null_elements(t)
+        return cls._squeeze_line(str(t))
+
+    @classmethod
+    def _to_tree(cls, line):
+        line = cls.WORD_UNIT_PROG.sub(r'[\1]', line)
+        tree = Tree.fromstring(line)
+        return cls._combine_multiword(tree)
+
+    @classmethod
+    def _combine_multiword(cls, tree):
+        if cls._is_leaf(tree):
+            return tree[1:-1] if tree[0] == '[' and tree[-1] == ']' else tree
+
+        if len(tree) > 1 and all(cls._is_leaf(child) for child in tree):
+            assert tree[0][0] == '[' and tree[-1][-1] == ']'
+            new_child = '_'.join(tree)[1:-1]
+            return Tree(tree.label(), [new_child])
+
+        return Tree(tree.label(), [cls._combine_multiword(child) for child in tree])
+
+    @staticmethod
+    def _squeeze_line(line):
+        return re.sub(r'  +', ' ', line.strip().replace('\n', ''))
+
+    @classmethod
+    def _strip_function_labels(cls, tree):
+        if cls._is_leaf(tree):
+            return tree
+
+        label = tree.label()
+        ix = label.find('-')
+        new_label = label[:ix] if ix > 0 else label
+        return Tree(new_label, [cls._strip_function_labels(child) for child in tree])
+
+    @classmethod
+    def _remove_null_elements(cls, tree):
+        if cls._is_leaf(tree):
+            return None if cls._get_head_label(tree) in cls.NULL_ELEMS else tree
+
+        if (cls._get_head_label(tree.label()) == 'NP' and len(tree) == 1 and
+                cls._is_leaf(tree[0]) and cls._get_head_label(tree[0]) == '*'):
+            return None
+
+        new_children = []
+        for child in tree:
+            new_child = cls._remove_null_elements(child)
+            if new_child is not None:
+                new_children.append(new_child)
+        return Tree(tree.label(), new_children) if new_children else None
+
+    @staticmethod
+    def _is_leaf(tree):
+        return not isinstance(tree, Tree)
+
+    @staticmethod
+    def _get_head_label(label):
+        ix = label.find('-')
+        return label[:ix] if ix > 0 else label
 
     def __iter__(self):
         return islice(self._get_iterator(), self.max_num_sentences)

@@ -145,6 +145,16 @@ class IDNTreebank:
     def __init__(self, corpus_dir, which='train', split_num=0, max_num_sentences=None):
         """An iterable class for IDN Treebank corpus.
 
+        An instance of this class will iterate through all the parsed sentences one by one,
+        even though in the original dataset, one line might contain more than one parsed
+        sentences. Preprocessing is performed for each parsed sentence:
+        1) Stripping off the grammatical function labels of the nonterminals
+           (e.g. NP-SBJ becomes NP)
+        2) Removing null elements (e.g. *T*, *U*, etc; full list in section 4 Penn Treebank
+           annotation guideline)
+        3) Joining multiple words under the same nonterminal label, delimited by underscore
+           (e.g. "(NN (kunjungan kerja))" becomes "(NN kunjungan_kerja)")
+
         Args:
             corpus_dir (str): Path to IDN treebank corpus directory.
             which (str): Which dataset to load. Must be one of 'train', 'valid', or 'test'.
@@ -167,11 +177,34 @@ class IDNTreebank:
                                 f'{self.FILENAME}.{self.split_num}.{self.which}')
         with open(filename) as f:
             for line in f:
-                yield self._preprocess_line(line)
+                yield from (self._preprocess_sentence(sent)
+                            for sent in self._get_parsed_sentences(line))
+
+    @staticmethod
+    def _get_parsed_sentences(line):
+        i = 0
+        while i < len(line) and line[i] != '(':
+            i += 1
+
+        while i < len(line):
+            j = i
+            bracket_cnt = 0
+            while j < len(line):
+                if line[j] == '(':
+                    bracket_cnt += 1
+                elif line[j] == ')':
+                    bracket_cnt -= 1
+                j += 1
+                if bracket_cnt == 0:
+                    yield line[i:j]
+                    break
+            i = j
+            while i < len(line) and line[i] != '(':
+                i += 1
 
     @classmethod
-    def _preprocess_line(cls, line):
-        s = cls._squeeze_line(line.replace('\t', ''))
+    def _preprocess_sentence(cls, sentence):
+        s = cls._squeeze_line(sentence.replace('\t', ''))
         t = cls._strip_function_labels(cls._to_tree(s))
         t = cls._remove_null_elements(t)
         return cls._squeeze_line(str(t))

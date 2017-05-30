@@ -113,7 +113,8 @@ class PennTreebank:
             return tree
 
         label = tree.label()
-        ix = label.find('-')
+        ixs = [label.find(c) for c in '-=|' if label.find(c) >= 0]
+        ix = min(ixs) if ixs else 0
         new_label = label[:ix] if ix > 0 else label
         return Tree(new_label, [cls._strip_function_labels(child) for child in tree])
 

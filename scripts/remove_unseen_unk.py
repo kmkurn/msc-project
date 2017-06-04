@@ -42,14 +42,14 @@ if __name__ == '__main__':
                 tokens_line = next(f).strip()
             except StopIteration:
                 print(f'{linum}: expected a line of word tokens but found EOF instead.',
-                      file=sys.err)
+                      file=sys.stderr)
                 sys.exit(1)
             linum += 1
             try:
                 unkified_line = next(f).strip()
             except StopIteration:
                 print(f'{linum}: expected a line of unkified tokens but found EOF instead.',
-                      file=sys.err)
+                      file=sys.stderr)
                 sys.exit(1)
 
             no_unseen_unks = all(token in unk_tokens for token in unkified_line.split()
@@ -62,7 +62,7 @@ if __name__ == '__main__':
                 line = next(f).strip()
             except StopIteration:
                 print(f'{linum}: expected min. one parser action but found EOF instead.',
-                      file=sys.err)
+                      file=sys.stderr)
                 sys.exit(1)
             while line:
                 if no_unseen_unks:

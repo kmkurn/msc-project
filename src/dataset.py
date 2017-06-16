@@ -140,7 +140,6 @@ class PennTreebank:
 
 class IDNTreebank:
     FILENAME = 'Indonesian_Treebank.bracket'
-    NULL_ELEMS = ['*T*', '0', '*U*', '*?*', '*NOT*', '*RNR*', '*ICH*', '*EXP*', '*PPA*']
     WORD_UNIT_PROG = re.compile(r'\(([^\(\)]+)\)')
 
     def __init__(self, corpus_dir, which='train', split_num=0, max_num_sentences=None):
@@ -246,11 +245,7 @@ class IDNTreebank:
     @classmethod
     def _remove_null_elements(cls, tree):
         if cls._is_leaf(tree):
-            return None if cls._get_head_label(tree) in cls.NULL_ELEMS else tree
-
-        if (cls._get_head_label(tree.label()) == 'NP' and len(tree) == 1 and
-                cls._is_leaf(tree[0]) and cls._get_head_label(tree[0]) == '*'):
-            return None
+            return None if tree.startswith('*') or tree.startswith('0') else tree
 
         new_children = []
         for child in tree:
@@ -262,11 +257,6 @@ class IDNTreebank:
     @staticmethod
     def _is_leaf(tree):
         return not isinstance(tree, Tree)
-
-    @staticmethod
-    def _get_head_label(label):
-        ix = label.find('-')
-        return label[:ix] if ix > 0 else label
 
     def __iter__(self):
         return islice(self._get_iterator(), self.max_num_sentences)

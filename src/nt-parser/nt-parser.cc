@@ -969,9 +969,9 @@ int main(int argc, char** argv) {
   }
 
   if (conf.count("t2l_norm")) {
-    if (model.p_t2l) {
+    if (parser.p_t2l) {
       float l2norm;
-      (model.p_t2l)->squared_l2norm(&l2norm);
+      (parser.p_t2l)->squared_l2norm(&l2norm);
       cout << "Squard t2l L2 norm: " << l2norm << endl;
       return 0;
     } else {

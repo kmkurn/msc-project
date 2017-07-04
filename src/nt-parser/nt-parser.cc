@@ -968,7 +968,7 @@ int main(int argc, char** argv) {
     ia >> model;
   }
 
-  if (conf.count["t2l_norm"]) {
+  if (conf.count("t2l_norm")) {
     if (model.p_t2l) {
       float l2norm;
       (model.p_t2l)->squared_l2norm(&l2norm);

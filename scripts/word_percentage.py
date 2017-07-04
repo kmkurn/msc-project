@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function, division
+
 from argparse import ArgumentParser
 
 from nltk.tree import Tree
@@ -30,7 +32,7 @@ if __name__ == '__main__':
 
     pre_words_in_training = train_words.intersection(pretrained_words)
     pre_words_rate = len(pre_words_in_training) / len(train_words)
-    print(f'Number of pretrained words: {len(pretrained_words)}')
-    print(f'Number of pretrained words in training: {len(pre_words_in_training)}')
-    print(f'Number of word in training: {len(train_words)}')
-    print(f'Percentage of pretrained words in training: {pre_words_rate:.2%}')
+    print('Number of pretrained words: {}'.format(len(pretrained_words)))
+    print('Number of pretrained words in training: {}'.format(len(pre_words_in_training)))
+    print('Number of word in training: {}'.format(len(train_words)))
+    print('Percentage of pretrained words in training: {:.2%}'.format(pre_words_rate))

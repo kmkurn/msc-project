@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 from argparse import ArgumentParser
-from itertools import accumulate
 import os
 import random
 
@@ -17,9 +18,8 @@ def get_split_indices(size, k=5):
     fold_sizes = [size // k for _ in range(k)]
     for i in range(size % k):
         fold_sizes[i] += 1
-    cum_fold_sizes = list(accumulate(fold_sizes))
     for i in range(k):
-        skip = cum_fold_sizes[i-1] if i > 0 else 0
+        skip = sum(fold_sizes[:i])
         fsz = fold_sizes[i]
         yield indices[skip:skip+fsz]
 
@@ -62,9 +62,9 @@ if __name__ == '__main__':
 
     for i, indices in enumerate(get_split_indices(len(lines), k=args.k)):
         test, valid, train = split(lines, indices, hold_out=args.hold_out)
-        fname_test = os.path.join(f'{output_dir}', f'{basename}.{i}.test')
-        fname_valid = os.path.join(f'{output_dir}', f'{basename}.{i}.valid')
-        fname_train = os.path.join(f'{output_dir}', f'{basename}.{i}.train')
+        fname_test = os.path.join(output_dir, '{}.{}.test'.format(basename, i))
+        fname_valid = os.path.join(output_dir, '{}.{}.valid'.format(basename, i))
+        fname_train = os.path.join(output_dir, '{}.{}.train'.format(basename, i))
         with open(fname_test, 'w') as f:
             print(''.join(test), file=f)
         with open(fname_train, 'w') as f:

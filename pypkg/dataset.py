@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from argparse import ArgumentParser
 import glob
 from itertools import islice
@@ -38,9 +40,10 @@ class PennTreebank:
         """
         if which not in ['train', 'valid', 'test']:
             raise ValueError(
-                f'`which` should be one of "train", "valid", or "test". Got "{which}".')
+                '`which` should be one of "train", "valid", or "test". Got "{}".'
+                .format(which))
         if version not in ['2.0', '3.0']:
-            raise ValueError(f'`version` should be "2.0" or "3.0". Got "{version}".')
+            raise ValueError('`version` should be "2.0" or "3.0". Got "{}".'.format(version))
 
         self.corpus_dir = corpus_dir
         self.which = which
@@ -71,12 +74,13 @@ class PennTreebank:
         path = os.path.join(self.corpus_dir, self.version, self.corrected_dir,
                             self.parsed_dir, 'wsj')
         for sec in self.sections:
-            glob_pattern = os.path.join(path, f'{sec:02}', '*.mrg')
+            glob_pattern = os.path.join(path, '{:02}'.format(sec), '*.mrg')
             for filename in sorted(glob.glob(glob_pattern)):
                 with open(filename) as f:
                     lines = (line.rstrip() for line in f if line.rstrip())
-                    yield from (self._preprocess_sentence(sent)
-                                for sent in self._concat_parsed_sentences(lines))
+                    for s in (self._preprocess_sentence(sent)
+                              for sent in self._concat_parsed_sentences(lines)):
+                        yield s
 
     @classmethod
     def _preprocess_sentence(cls, sentence):
@@ -164,7 +168,8 @@ class IDNTreebank:
         """
         if which not in ['train', 'valid', 'test']:
             raise ValueError(
-                f'`which` should be one of "train", "valid", or "test". Got "{which}".')
+                '`which` should be one of "train", "valid", or "test". Got "{}".'
+                .format(which))
 
         self.corpus_dir = corpus_dir
         self.which = which
@@ -172,12 +177,13 @@ class IDNTreebank:
         self.max_num_sentences = max_num_sentences
 
     def _get_iterator(self):
-        filename = os.path.join(self.corpus_dir,
-                                f'{self.FILENAME}.{self.split_num}.{self.which}')
+        filename = os.path.join(self.corpus_dir, '{}.{}.{}'.format(
+            self.FILENAME, self.split_num, self.which))
         with open(filename) as f:
             for line in f:
-                yield from (self._preprocess_sentence(sent)
-                            for sent in self._get_parsed_sentences(line))
+                for s in (self._preprocess_sentence(sent)
+                          for sent in self._get_parsed_sentences(line)):
+                    yield s
 
     @staticmethod
     def _get_parsed_sentences(line):

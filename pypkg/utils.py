@@ -48,9 +48,8 @@ def dump_args(args, path=None, excludes=None, override_excludes=False):
 
 
 def _get_last_commit_hash():
-    return subprocess.run(
-        'git log -n 1 --pretty=format:%H'.split(), stdout=subprocess.PIPE,
-        encoding='UTF-8').stdout
+    return subprocess.Popen(
+        'git log -n 1 --pretty=format:%H'.split(), stdout=subprocess.PIPE).communicate()[0]
 
 
 def load_args(obj, path=None, typecast=None):

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 from argparse import ArgumentParser
 from math import sqrt
 import os
@@ -24,9 +26,10 @@ if __name__ == '__main__':
             for word in line.strip().split():
                 vocab.add(word)
     clust_size = int(sqrt(len(vocab)))
-    print(f'vocab size: {len(vocab)}', file=sys.stderr)
-    print(f'cluster size: {clust_size}', file=sys.stderr)
+    print('vocab size: {}'.format(len(vocab)), file=sys.stderr)
+    print('cluster size: {}'.format(clust_size), file=sys.stderr)
 
-    cmd = f'{args.wcluster} --text {args.file} --c {clust_size} --output_dir {args.outdir}'
-    print(f'command: {cmd}', file=sys.stderr)
-    subprocess.run(cmd, check=True, shell=True)
+    cmd = '{} --text {} --c {} --output_dir {}'.format(
+        args.wcluster, args.file, clust_size, args.outdir)
+    print('command: {}'.format(cmd), file=sys.stderr)
+    subprocess.call(cmd, shell=True)

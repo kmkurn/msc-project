@@ -66,31 +66,31 @@ vector<bool> singletons; // used during training
 void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
   po::options_description opts("Configuration options");
   opts.add_options()
-        ("training_data,T", po::value<string>(), "List of Transitions - Training corpus")
-        ("explicit_terminal_reduce,x", "[recommended] If set, the parser must explicitly process a REDUCE operation to complete a preterminal constituent")
-        ("dev_data,d", po::value<string>(), "Development corpus")
-        ("bracketing_dev_data,C", po::value<string>(), "Development bracketed corpus")
+    ("training_data,T", po::value<string>(), "List of Transitions - Training corpus")
+    ("explicit_terminal_reduce,x", "[recommended] If set, the parser must explicitly process a REDUCE operation to complete a preterminal constituent")
+    ("dev_data,d", po::value<string>(), "Development corpus")
+    ("bracketing_dev_data,C", po::value<string>(), "Development bracketed corpus")
 
-        ("test_data,p", po::value<string>(), "Test corpus")
-        ("dropout,D", po::value<float>(), "Dropout rate")
-        ("samples,s", po::value<unsigned>(), "Sample N trees for each test sentence instead of greedy max decoding")
-        ("alpha,a", po::value<float>(), "Flatten (0 < alpha < 1) or sharpen (1 < alpha) sampling distribution")
-        ("model,m", po::value<string>(), "Load saved model from this file")
-        ("use_pos_tags,P", "make POS tags visible to parser")
-        ("layers", po::value<unsigned>()->default_value(2), "number of LSTM layers")
-        ("action_dim", po::value<unsigned>()->default_value(16), "action embedding size")
-        ("pos_dim", po::value<unsigned>()->default_value(12), "POS dimension")
-        ("input_dim", po::value<unsigned>()->default_value(32), "input embedding size")
-        ("hidden_dim", po::value<unsigned>()->default_value(64), "hidden dimension")
-        ("pretrained_dim", po::value<unsigned>()->default_value(50), "pretrained input dimension")
-        ("lstm_input_dim", po::value<unsigned>()->default_value(60), "LSTM input dimension")
-        ("train,t", "Should training be run?")
-        ("words,w", po::value<string>(), "Pretrained word embeddings")
-        ("beam_size,b", po::value<unsigned>()->default_value(1), "beam size")
-        ("python", po::value<string>()->default_value("python"), "path to python binary")
-        ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
-        ("start_epoch", po::value<float>(), "Starting epoch")
-        ("help,h", "Help");
+    ("test_data,p", po::value<string>(), "Test corpus")
+    ("dropout,D", po::value<float>(), "Dropout rate")
+    ("samples,s", po::value<unsigned>(), "Sample N trees for each test sentence instead of greedy max decoding")
+    ("alpha,a", po::value<float>(), "Flatten (0 < alpha < 1) or sharpen (1 < alpha) sampling distribution")
+    ("model,m", po::value<string>(), "Load saved model from this file")
+    ("use_pos_tags,P", "make POS tags visible to parser")
+    ("layers", po::value<unsigned>()->default_value(2), "number of LSTM layers")
+    ("action_dim", po::value<unsigned>()->default_value(16), "action embedding size")
+    ("pos_dim", po::value<unsigned>()->default_value(12), "POS dimension")
+    ("input_dim", po::value<unsigned>()->default_value(32), "input embedding size")
+    ("hidden_dim", po::value<unsigned>()->default_value(64), "hidden dimension")
+    ("pretrained_dim", po::value<unsigned>()->default_value(50), "pretrained input dimension")
+    ("lstm_input_dim", po::value<unsigned>()->default_value(60), "LSTM input dimension")
+    ("train,t", "Should training be run?")
+    ("words,w", po::value<string>(), "Pretrained word embeddings")
+    ("beam_size,b", po::value<unsigned>()->default_value(1), "beam size")
+    ("python", po::value<string>()->default_value("python"), "path to python binary")
+    ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
+    ("start_epoch", po::value<float>(), "Starting epoch")
+    ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
   po::store(parse_command_line(argc, argv, dcmdline_options), *conf);
@@ -136,30 +136,30 @@ struct ParserBuilder {
   Parameters* p_cW;
 
   explicit ParserBuilder(Model* model, const unordered_map<unsigned, vector<float>>& pretrained) :
-      stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
-      action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
-      const_lstm_fwd(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
-      const_lstm_rev(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
-      p_w(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
-      p_t(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
-      p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
-      p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
-      p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),
-      p_pbias(model->add_parameters({HIDDEN_DIM})),
-      p_A(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      p_B(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      p_S(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      p_w2l(model->add_parameters({LSTM_INPUT_DIM, INPUT_DIM})),
-      p_ib(model->add_parameters({LSTM_INPUT_DIM})),
-      p_cbias(model->add_parameters({LSTM_INPUT_DIM})),
-      p_p2a(model->add_parameters({ACTION_SIZE, HIDDEN_DIM})),
-      p_action_start(model->add_parameters({ACTION_DIM})),
-      p_abias(model->add_parameters({ACTION_SIZE})),
+    stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
+    action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
+    const_lstm_fwd(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
+    const_lstm_rev(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
+    p_w(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
+    p_t(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
+    p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
+    p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
+    p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),
+    p_pbias(model->add_parameters({HIDDEN_DIM})),
+    p_A(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    p_B(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    p_S(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    p_w2l(model->add_parameters({LSTM_INPUT_DIM, INPUT_DIM})),
+    p_ib(model->add_parameters({LSTM_INPUT_DIM})),
+    p_cbias(model->add_parameters({LSTM_INPUT_DIM})),
+    p_p2a(model->add_parameters({ACTION_SIZE, HIDDEN_DIM})),
+    p_action_start(model->add_parameters({ACTION_DIM})),
+    p_abias(model->add_parameters({ACTION_SIZE})),
 
-      p_buffer_guard(model->add_parameters({LSTM_INPUT_DIM})),
-      p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
+    p_buffer_guard(model->add_parameters({LSTM_INPUT_DIM})),
+    p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
 
-      p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {
+    p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {
     if (IMPLICIT_REDUCE_AFTER_SHIFT) {
       p_ptbias = model->add_parameters({LSTM_INPUT_DIM}); // preterminal bias (used with IMPLICIT_REDUCE_AFTER_SHIFT)
       p_ptW = model->add_parameters({LSTM_INPUT_DIM, 2*LSTM_INPUT_DIM});    // preterminal W (used with IMPLICIT_REDUCE_AFTER_SHIFT)
@@ -180,54 +180,54 @@ struct ParserBuilder {
     }
   }
 
-// checks to see if a proposed action is valid in discriminative models
-static bool IsActionForbidden_Discriminative(const string& a, char prev_a, unsigned bsize, unsigned ssize, unsigned nopen_parens) {
-  bool is_shift = (a[0] == 'S' && a[1]=='H');
-  bool is_reduce = (a[0] == 'R' && a[1]=='E');
-  bool is_nt = (a[0] == 'N');
-  assert(is_shift || is_reduce || is_nt);
-  static const unsigned MAX_OPEN_NTS = 100;
-  if (is_nt && nopen_parens > MAX_OPEN_NTS) return true;
-  if (ssize == 1) {
-    if (!is_nt) return true;
+  // checks to see if a proposed action is valid in discriminative models
+  static bool IsActionForbidden_Discriminative(const string& a, char prev_a, unsigned bsize, unsigned ssize, unsigned nopen_parens) {
+    bool is_shift = (a[0] == 'S' && a[1]=='H');
+    bool is_reduce = (a[0] == 'R' && a[1]=='E');
+    bool is_nt = (a[0] == 'N');
+    assert(is_shift || is_reduce || is_nt);
+    static const unsigned MAX_OPEN_NTS = 100;
+    if (is_nt && nopen_parens > MAX_OPEN_NTS) return true;
+    if (ssize == 1) {
+      if (!is_nt) return true;
+      return false;
+    }
+
+    if (IMPLICIT_REDUCE_AFTER_SHIFT) {
+      // if a SHIFT has an implicit REDUCE, then only shift after an NT:
+      if (is_shift && prev_a != 'N') return true;
+    }
+
+    // be careful with top-level parens- you can only close them if you
+    // have fully processed the buffer
+    if (nopen_parens == 1 && bsize > 1) {
+      if (IMPLICIT_REDUCE_AFTER_SHIFT && is_shift) return true;
+      if (is_reduce) return true;
+    }
+
+    // you can't reduce after an NT action
+    if (is_reduce && prev_a == 'N') return true;
+    if (is_nt && bsize == 1) return true;
+    if (is_shift && bsize == 1) return true;
+    if (is_reduce && ssize < 3) return true;
+
+    // TODO should we control the depth of the parse in some way? i.e., as long as there
+    // are items in the buffer, we can do an NT operation, which could cause trouble
     return false;
   }
 
-  if (IMPLICIT_REDUCE_AFTER_SHIFT) {
-    // if a SHIFT has an implicit REDUCE, then only shift after an NT:
-    if (is_shift && prev_a != 'N') return true;
-  }
 
-  // be careful with top-level parens- you can only close them if you
-  // have fully processed the buffer
-  if (nopen_parens == 1 && bsize > 1) {
-    if (IMPLICIT_REDUCE_AFTER_SHIFT && is_shift) return true;
-    if (is_reduce) return true;
-  }
-
-  // you can't reduce after an NT action
-  if (is_reduce && prev_a == 'N') return true;
-  if (is_nt && bsize == 1) return true;
-  if (is_shift && bsize == 1) return true;
-  if (is_reduce && ssize < 3) return true;
-
-  // TODO should we control the depth of the parse in some way? i.e., as long as there
-  // are items in the buffer, we can do an NT operation, which could cause trouble
-  return false;
-}
-
-
-// *** if correct_actions is empty, this runs greedy decoding ***
-// returns parse actions for input sentence (in training just returns the reference)
-// this lets us use pretrained embeddings, when available, for words that were OOV in the
-// parser training data
-// set sample=true to sample rather than max
-vector<unsigned> log_prob_parser(ComputationGraph* hg,
-                     const parser::Sentence& sent,
-                     const vector<int>& correct_actions,
-                     double *right,
-                     bool is_evaluation,
-                     bool sample = false) {
+  // *** if correct_actions is empty, this runs greedy decoding ***
+  // returns parse actions for input sentence (in training just returns the reference)
+  // this lets us use pretrained embeddings, when available, for words that were OOV in the
+  // parser training data
+  // set sample=true to sample rather than max
+  vector<unsigned> log_prob_parser(ComputationGraph* hg,
+                                   const parser::Sentence& sent,
+                                   const vector<int>& correct_actions,
+                                   double *right,
+                                   bool is_evaluation,
+                                   bool sample = false) {
     vector<unsigned> results;
     const bool build_training_graph = correct_actions.size() > 0;
     bool apply_dropout = (DROPOUT && !is_evaluation);
@@ -286,23 +286,23 @@ vector<unsigned> log_prob_parser(ComputationGraph* hg,
 
     // in the discriminative model, here we set up the buffer contents
     for (unsigned i = 0; i < sent.size(); ++i) {
-        int wordid = sent.raw[i]; // this will be equal to unk at dev/test
-        if (build_training_graph && singletons.size() > wordid && singletons[wordid] && rand01() > 0.5)
-          wordid = sent.unk[i];
-        Expression w = lookup(*hg, p_w, wordid);
+      int wordid = sent.raw[i]; // this will be equal to unk at dev/test
+      if (build_training_graph && singletons.size() > wordid && singletons[wordid] && rand01() > 0.5)
+        wordid = sent.unk[i];
+      Expression w = lookup(*hg, p_w, wordid);
 
-        vector<Expression> args = {ib, w2l, w}; // learn embeddings
-        if (p_t && pretrained.count(sent.lc[i])) {  // include fixed pretrained vectors?
-          Expression t = const_lookup(*hg, p_t, sent.lc[i]);
-          args.push_back(t2l);
-          args.push_back(t);
-        }
-        if (USE_POS) {
-          args.push_back(p2w);
-          args.push_back(lookup(*hg, p_pos, sent.pos[i]));
-        }
-        buffer[sent.size() - i] = rectify(affine_transform(args));
-        bufferi[sent.size() - i] = i;
+      vector<Expression> args = {ib, w2l, w}; // learn embeddings
+      if (p_t && pretrained.count(sent.lc[i])) {  // include fixed pretrained vectors?
+        Expression t = const_lookup(*hg, p_t, sent.lc[i]);
+        args.push_back(t2l);
+        args.push_back(t);
+      }
+      if (USE_POS) {
+        args.push_back(p2w);
+        args.push_back(lookup(*hg, p_pos, sent.pos[i]));
+      }
+      buffer[sent.size() - i] = rectify(affine_transform(args));
+      bufferi[sent.size() - i] = i;
     }
     // dummy symbol to represent the empty buffer
     buffer[0] = parameter(*hg, p_buffer_guard);
@@ -467,7 +467,7 @@ vector<unsigned> log_prob_parser(ComputationGraph* hg,
           stack_lstm.rewind_one_step();
           is_open_paren.pop_back();
         }
-	is_open_paren.pop_back(); // nt symbol
+        is_open_paren.pop_back(); // nt symbol
         assert (stacki.back() == -1);
         stacki.pop_back(); // nonterminal dummy
         stack.pop_back(); // nonterminal dummy
@@ -507,66 +507,61 @@ vector<unsigned> log_prob_parser(ComputationGraph* hg,
     return results;
   }
 
+  struct ParserState {
+    LSTMBuilder stack_lstm;
+    LSTMBuilder *buffer_lstm;
+    LSTMBuilder action_lstm;
+    vector<Expression> buffer;
+    vector<int> bufferi;
+    LSTMBuilder const_lstm_fwd;
+    LSTMBuilder const_lstm_rev;
 
+    vector<Expression> stack;
+    vector<int> stacki;
+    vector<unsigned> results;  // sequence of predicted actions
+    bool complete;
+    vector<Expression> log_probs;
+    double score;
+    int action_count;
+    int nopen_parens;
+    char prev_a;
+  };
 
+  struct ParserStateCompare {
+    bool operator()(const ParserState& a, const ParserState& b) const {
+      return a.score > b.score;
+    }
+  };
 
-struct ParserState {
-  LSTMBuilder stack_lstm;
-  LSTMBuilder *buffer_lstm;
-  LSTMBuilder action_lstm;
-  vector<Expression> buffer;
-  vector<int> bufferi;
-  LSTMBuilder const_lstm_fwd;
-  LSTMBuilder const_lstm_rev;
-
-  vector<Expression> stack;
-  vector<int> stacki;
-  vector<unsigned> results;  // sequence of predicted actions
-  bool complete;
-  vector<Expression> log_probs;
-  double score;
-  int action_count;
-  int nopen_parens;
-  char prev_a;
-};
-
-
-struct ParserStateCompare {
-  bool operator()(const ParserState& a, const ParserState& b) const {
-    return a.score > b.score;
+  static void prune(vector<ParserState>& pq, unsigned k) {
+    if (pq.size() == 1) return;
+    if (k > pq.size()) k = pq.size();
+    partial_sort(pq.begin(), pq.begin() + k, pq.end(), ParserStateCompare());
+    pq.resize(k);
+    reverse(pq.begin(), pq.end());
+    //cerr << "PRUNE\n";
+    //for (unsigned i = 0; i < pq.size(); ++i) {
+    //  cerr << pq[i].score << endl;
+    //}
   }
-};
 
-static void prune(vector<ParserState>& pq, unsigned k) {
-  if (pq.size() == 1) return;
-  if (k > pq.size()) k = pq.size();
-  partial_sort(pq.begin(), pq.begin() + k, pq.end(), ParserStateCompare());
-  pq.resize(k);
-  reverse(pq.begin(), pq.end());
-  //cerr << "PRUNE\n";
-  //for (unsigned i = 0; i < pq.size(); ++i) {
-  //  cerr << pq[i].score << endl;
-  //}
-}
+  static bool all_complete(const vector<ParserState>& pq) {
+    for (auto& ps : pq) if (!ps.complete) return false;
+    return true;
+  }
 
-static bool all_complete(const vector<ParserState>& pq) {
-  for (auto& ps : pq) if (!ps.complete) return false;
-  return true;
-}
-
-
-// log_prob_parser with beam-search
-// *** if correct_actions is empty, this runs greedy decoding ***
-// returns parse actions for input sentence (in training just returns the reference)
-// this lets us use pretrained embeddings, when available, for words that were OOV in the
-// parser training data
-// set sample=true to sample rather than max
-vector<unsigned> log_prob_parser_beam(ComputationGraph* hg,
-                     const parser::Sentence& sent,
-                     const vector<int>& correct_actions,
-                     double *right,
-		     unsigned beam_size,
-                     bool sample = false) {
+  // log_prob_parser with beam-search
+  // *** if correct_actions is empty, this runs greedy decoding ***
+  // returns parse actions for input sentence (in training just returns the reference)
+  // this lets us use pretrained embeddings, when available, for words that were OOV in the
+  // parser training data
+  // set sample=true to sample rather than max
+  vector<unsigned> log_prob_parser_beam(ComputationGraph* hg,
+                                        const parser::Sentence& sent,
+                                        const vector<int>& correct_actions,
+                                        double *right,
+                                        unsigned beam_size,
+                                        bool sample = false) {
     vector<unsigned> results;
     const bool build_training_graph = correct_actions.size() > 0;
     stack_lstm.new_graph(*hg);
@@ -611,23 +606,23 @@ vector<unsigned> log_prob_parser_beam(ComputationGraph* hg,
 
     // in the discriminative model, here we set up the buffer contents
     for (unsigned i = 0; i < sent.size(); ++i) {
-        int wordid = sent.raw[i]; // this will be equal to unk at dev/test
-        if (build_training_graph && singletons.size() > wordid && singletons[wordid] && rand01() > 0.5)
-          wordid = sent.unk[i];
-        Expression w = lookup(*hg, p_w, wordid);
+      int wordid = sent.raw[i]; // this will be equal to unk at dev/test
+      if (build_training_graph && singletons.size() > wordid && singletons[wordid] && rand01() > 0.5)
+        wordid = sent.unk[i];
+      Expression w = lookup(*hg, p_w, wordid);
 
-        vector<Expression> args = {ib, w2l, w}; // learn embeddings
-        if (p_t && pretrained.count(sent.lc[i])) {  // include fixed pretrained vectors?
-          Expression t = const_lookup(*hg, p_t, sent.lc[i]);
-          args.push_back(t2l);
-          args.push_back(t);
-        }
-        if (USE_POS) {
-          args.push_back(p2w);
-          args.push_back(lookup(*hg, p_pos, sent.pos[i]));
-        }
-        buffer[sent.size() - i] = rectify(affine_transform(args));
-        bufferi[sent.size() - i] = i;
+      vector<Expression> args = {ib, w2l, w}; // learn embeddings
+      if (p_t && pretrained.count(sent.lc[i])) {  // include fixed pretrained vectors?
+        Expression t = const_lookup(*hg, p_t, sent.lc[i]);
+        args.push_back(t2l);
+        args.push_back(t);
+      }
+      if (USE_POS) {
+        args.push_back(p2w);
+        args.push_back(lookup(*hg, p_pos, sent.pos[i]));
+      }
+      buffer[sent.size() - i] = rectify(affine_transform(args));
+      bufferi[sent.size() - i] = i;
     }
     // dummy symbol to represent the empty buffer
     buffer[0] = parameter(*hg, p_buffer_guard);
@@ -674,7 +669,6 @@ vector<unsigned> log_prob_parser_beam(ComputationGraph* hg,
     pq.push_back(init);
     vector<ParserState> completed;
 
-
     while (pq.size()>0) {
       const ParserState cur = pq.back();
       pq.pop_back();
@@ -683,7 +677,7 @@ vector<unsigned> log_prob_parser_beam(ComputationGraph* hg,
         if (completed.size() == beam_size) break;
         continue;
       }
-    //while(stack.size() > 2 || buffer.size() > 1) {
+      //while(stack.size() > 2 || buffer.size() > 1) {
       // get list of possible actions for the current parser state
       current_valid_actions.clear();
       for (auto a: possible_actions) {
@@ -925,8 +919,8 @@ int main(int argc, char** argv) {
   // freeze dictionaries so we don't accidentaly load OOVs
   termdict.Freeze();
   termdict.SetUnk("UNK"); // we don't actually expect to use this often
-     // since the Oracles are required to be "pre-UNKified", but this prevents
-     // problems with UNKifying the lowercased data which needs to be loaded
+  // since the Oracles are required to be "pre-UNKified", but this prevents
+  // problems with UNKifying the lowercased data which needs to be loaded
   adict.Freeze();
   ntermdict.Freeze();
   posdict.Freeze();
@@ -1007,34 +1001,34 @@ int main(int argc, char** argv) {
       ++iter;
       auto time_start = chrono::system_clock::now();
       for (unsigned sii = 0; sii < status_every_i_iterations; ++sii) {
-           if (si == corpus.sents.size()) {
-             si = 0;
-             if (first) { first = false; } else { sgd.update_epoch(); }
-             cerr << "**SHUFFLE\n";
-             random_shuffle(order.begin(), order.end());
-           }
-           tot_seen += 1;
-           auto& sentence = corpus.sents[order[si]];
-	   const vector<int>& actions=corpus.actions[order[si]];
-           ComputationGraph hg;
-           parser.log_prob_parser(&hg,sentence,actions,&right,false);
-           double lp = as_scalar(hg.incremental_forward());
-           if (lp < 0) {
-             cerr << "Log prob < 0 on sentence " << order[si] << ": lp=" << lp << endl;
-             assert(lp >= 0.0);
-           }
-           hg.backward();
-           sgd.update(1.0);
-           llh += lp;
-           ++si;
-           trs += actions.size();
-           words += sentence.size();
+        if (si == corpus.sents.size()) {
+          si = 0;
+          if (first) { first = false; } else { sgd.update_epoch(); }
+          cerr << "**SHUFFLE\n";
+          random_shuffle(order.begin(), order.end());
+        }
+        tot_seen += 1;
+        auto& sentence = corpus.sents[order[si]];
+        const vector<int>& actions=corpus.actions[order[si]];
+        ComputationGraph hg;
+        parser.log_prob_parser(&hg,sentence,actions,&right,false);
+        double lp = as_scalar(hg.incremental_forward());
+        if (lp < 0) {
+          cerr << "Log prob < 0 on sentence " << order[si] << ": lp=" << lp << endl;
+          assert(lp >= 0.0);
+        }
+        hg.backward();
+        sgd.update(1.0);
+        llh += lp;
+        ++si;
+        trs += actions.size();
+        words += sentence.size();
       }
       sgd.status();
       auto time_now = chrono::system_clock::now();
       auto dur = chrono::duration_cast<chrono::milliseconds>(time_now - time_start);
       cerr << "update #" << iter << " (epoch " << (tot_seen / corpus.sents.size()) <<
-         /*" |time=" << put_time(localtime(&time_now), "%c %Z") << ")\tllh: "<< */
+        /*" |time=" << put_time(localtime(&time_now), "%c %Z") << ")\tllh: "<< */
         ") per-action-ppl: " << exp(llh / trs) << " per-input-ppl: " << exp(llh / words) << " per-sent-ppl: " << exp(llh / status_every_i_iterations) << " err: " << (trs - right) / trs << " [" << dur.count() / (double)status_every_i_iterations << "ms per instance]" << endl;
       llh = trs = right = words = 0;
 
@@ -1052,36 +1046,36 @@ int main(int argc, char** argv) {
         ofstream out(pfx.c_str());
         auto t_start = chrono::high_resolution_clock::now();
         for (unsigned sii = 0; sii < dev_size; ++sii) {
-           const auto& sentence=dev_corpus.sents[sii];
-	   const vector<int>& actions=dev_corpus.actions[sii];
-           dwords += sentence.size();
-           {  ComputationGraph hg;
-              parser.log_prob_parser(&hg,sentence,actions,&right,true);
-              double lp = as_scalar(hg.incremental_forward());
-              llh += lp;
-           }
-           ComputationGraph hg;
-           vector<unsigned> pred = parser.log_prob_parser(&hg,sentence,vector<int>(),&right,true);
-           int ti = 0;
-           for (auto a : pred) {
-             if (adict.Convert(a)[0] == 'N') {
-               out << '(' << ntermdict.Convert(action2NTindex.find(a)->second) << ' ';
-             } else if (adict.Convert(a)[0] == 'S') {
-               if (IMPLICIT_REDUCE_AFTER_SHIFT) {
-                 out << termdict.Convert(sentence.raw[ti++]) << ") ";
-               } else {
-                 if (true) {
-                   string preterminal = "XX";
-                   out << '(' << preterminal << ' ' << termdict.Convert(sentence.raw[ti++]) << ") ";
-                 } else { // use this branch to surpress preterminals
-                   out << termdict.Convert(sentence.raw[ti++]) << ' ';
-                 }
-               }
-             } else out << ") ";
-           }
-           out << endl;
-           double lp = 0;
-           trs += actions.size();
+          const auto& sentence=dev_corpus.sents[sii];
+          const vector<int>& actions=dev_corpus.actions[sii];
+          dwords += sentence.size();
+          {  ComputationGraph hg;
+            parser.log_prob_parser(&hg,sentence,actions,&right,true);
+            double lp = as_scalar(hg.incremental_forward());
+            llh += lp;
+          }
+          ComputationGraph hg;
+          vector<unsigned> pred = parser.log_prob_parser(&hg,sentence,vector<int>(),&right,true);
+          int ti = 0;
+          for (auto a : pred) {
+            if (adict.Convert(a)[0] == 'N') {
+              out << '(' << ntermdict.Convert(action2NTindex.find(a)->second) << ' ';
+            } else if (adict.Convert(a)[0] == 'S') {
+              if (IMPLICIT_REDUCE_AFTER_SHIFT) {
+                out << termdict.Convert(sentence.raw[ti++]) << ") ";
+              } else {
+                if (true) {
+                  string preterminal = "XX";
+                  out << '(' << preterminal << ' ' << termdict.Convert(sentence.raw[ti++]) << ") ";
+                } else { // use this branch to surpress preterminals
+                  out << termdict.Convert(sentence.raw[ti++]) << ' ';
+                }
+              }
+            } else out << ") ";
+          }
+          out << endl;
+          double lp = 0;
+          trs += actions.size();
         }
         auto t_end = chrono::high_resolution_clock::now();
         out.close();
@@ -1108,24 +1102,24 @@ int main(int argc, char** argv) {
         std::string strfmeasure="";
         bool found=0;
         while (getline(evalfile, lineS) && !newfmeasure){
-		if (lineS.compare(0, brackstr.length(), brackstr) == 0) {
-			//std::cout<<lineS<<"\n";
-			strfmeasure=lineS.substr(lineS.size()-5, lineS.size());
-                        std::string::size_type sz;     // alias of size_t
+          if (lineS.compare(0, brackstr.length(), brackstr) == 0) {
+            //std::cout<<lineS<<"\n";
+            strfmeasure=lineS.substr(lineS.size()-5, lineS.size());
+            std::string::size_type sz;     // alias of size_t
 
-		        newfmeasure = std::stod (strfmeasure,&sz);
-			//std::cout<<strfmeasure<<"\n";
-		}
+            newfmeasure = std::stod (strfmeasure,&sz);
+            //std::cout<<strfmeasure<<"\n";
+          }
         }
 
 
 
         cerr << "  **dev (iter=" << iter << " epoch=" << (tot_seen / corpus.size()) << ")\tllh=" << llh << " ppl: " << exp(llh / dwords) << " f1: " << newfmeasure << " err: " << err << "\t[" << dev_size << " sents in " << chrono::duration<double, milli>(t_end-t_start).count() << " ms]" << endl;
-//        if (err < best_dev_err && (tot_seen / corpus.size()) > 1.0) {
-       if (newfmeasure>bestf1) {
+        //        if (err < best_dev_err && (tot_seen / corpus.size()) > 1.0) {
+        if (newfmeasure>bestf1) {
           cerr << "  new best...writing model to " << fname << " ...\n";
           best_dev_err = err;
-	  bestf1=newfmeasure;
+          bestf1=newfmeasure;
           ofstream out(fname);
           boost::archive::text_oarchive oa(out);
           oa << model;
@@ -1146,114 +1140,114 @@ int main(int argc, char** argv) {
     }
   } // should do training?
   if (test_corpus.size() > 0) { // do test evaluation
-        bool sample = conf.count("samples") > 0;
-        unsigned test_size = test_corpus.size();
-        double llh = 0;
-        double trs = 0;
-        double right = 0;
-        double dwords = 0;
-        auto t_start = chrono::high_resolution_clock::now();
-	const vector<int> actions;
-        for (unsigned sii = 0; sii < test_size; ++sii) {
-           const auto& sentence=test_corpus.sents[sii];
-           dwords += sentence.size();
-           for (unsigned z = 0; z < N_SAMPLES; ++z) {
-             ComputationGraph hg;
-             vector<unsigned> pred = parser.log_prob_parser(&hg,sentence,actions,&right,sample,true);
-             double lp = as_scalar(hg.incremental_forward());
-             cout << sii << " ||| " << -lp << " |||";
-             int ti = 0;
-             for (auto a : pred) {
-               if (adict.Convert(a)[0] == 'N') {
-                 cout << " (" << ntermdict.Convert(action2NTindex.find(a)->second);
-               } else if (adict.Convert(a)[0] == 'S') {
-                 if (IMPLICIT_REDUCE_AFTER_SHIFT) {
-                   cout << termdict.Convert(sentence.raw[ti++]) << ")";
-                 } else {
-                   if (!sample) {
-                     string preterminal = "XX";
-                     cout << " (" << preterminal << ' ' << termdict.Convert(sentence.raw[ti++]) << ")";
-                   } else { // use this branch to surpress preterminals
-                     cout << ' ' << termdict.Convert(sentence.raw[ti++]);
-                   }
-                 }
-               } else cout << ')';
-             }
-             cout << endl;
-           }
-       }
-       ostringstream os;
-        os << "/tmp/parser_test_eval." << getpid() << ".txt";
-        const string pfx = os.str();
-        ofstream out(pfx.c_str());
-        t_start = chrono::high_resolution_clock::now();
-        for (unsigned sii = 0; sii < test_size; ++sii) {
-           const auto& sentence=test_corpus.sents[sii];
-           const vector<int>& actions=test_corpus.actions[sii];
-           dwords += sentence.size();
-           {  ComputationGraph hg;
-              parser.log_prob_parser(&hg,sentence,actions,&right,true);
-              double lp = as_scalar(hg.incremental_forward());
-              llh += lp;
-           }
-           ComputationGraph hg;
-           vector<unsigned> pred = parser.log_prob_parser(&hg,sentence,vector<int>(),&right,true);
-           int ti = 0;
-           for (auto a : pred) {
-             if (adict.Convert(a)[0] == 'N') {
-               out << '(' << ntermdict.Convert(action2NTindex.find(a)->second) << ' ';
-             } else if (adict.Convert(a)[0] == 'S') {
-               if (IMPLICIT_REDUCE_AFTER_SHIFT) {
-                 out << termdict.Convert(sentence.raw[ti++]) << ") ";
-               } else {
-                 if (true) {
-                   string preterminal = "XX";
-                   out << '(' << preterminal << ' ' << termdict.Convert(sentence.raw[ti++]) << ") ";
-                 } else { // use this branch to surpress preterminals
-                   out << termdict.Convert(sentence.raw[ti++]) << ' ';
-                 }
-               }
-             } else out << ") ";
-           }
-           out << endl;
-           double lp = 0;
-           trs += actions.size();
+    bool sample = conf.count("samples") > 0;
+    unsigned test_size = test_corpus.size();
+    double llh = 0;
+    double trs = 0;
+    double right = 0;
+    double dwords = 0;
+    auto t_start = chrono::high_resolution_clock::now();
+    const vector<int> actions;
+    for (unsigned sii = 0; sii < test_size; ++sii) {
+      const auto& sentence=test_corpus.sents[sii];
+      dwords += sentence.size();
+      for (unsigned z = 0; z < N_SAMPLES; ++z) {
+        ComputationGraph hg;
+        vector<unsigned> pred = parser.log_prob_parser(&hg,sentence,actions,&right,sample,true);
+        double lp = as_scalar(hg.incremental_forward());
+        cout << sii << " ||| " << -lp << " |||";
+        int ti = 0;
+        for (auto a : pred) {
+          if (adict.Convert(a)[0] == 'N') {
+            cout << " (" << ntermdict.Convert(action2NTindex.find(a)->second);
+          } else if (adict.Convert(a)[0] == 'S') {
+            if (IMPLICIT_REDUCE_AFTER_SHIFT) {
+              cout << termdict.Convert(sentence.raw[ti++]) << ")";
+            } else {
+              if (!sample) {
+                string preterminal = "XX";
+                cout << " (" << preterminal << ' ' << termdict.Convert(sentence.raw[ti++]) << ")";
+              } else { // use this branch to surpress preterminals
+                cout << ' ' << termdict.Convert(sentence.raw[ti++]);
+              }
+            }
+          } else cout << ')';
         }
-        auto t_end = chrono::high_resolution_clock::now();
-        out.close();
-        double err = (trs - right) / trs;
-        cerr << "Test output in " << pfx << endl;
-        //parser::EvalBResults res = parser::Evaluate("foo", pfx);
-        std::string pid = std::to_string(getpid());
-        std::string evaluable_fname = "evaluable-" + pid + ".txt";
-        std::string evalbout_fname = "evalbout-" + pid + ".txt";
-        std::string python = conf["python"].as<string>();
-        std::string command=python + " remove_dev_unk.py " +  corpus.devdata  + " " + pfx + " > " + evaluable_fname;
-        const char* cmd=command.c_str();
-        system(cmd);
+        cout << endl;
+      }
+    }
+    ostringstream os;
+    os << "/tmp/parser_test_eval." << getpid() << ".txt";
+    const string pfx = os.str();
+    ofstream out(pfx.c_str());
+    t_start = chrono::high_resolution_clock::now();
+    for (unsigned sii = 0; sii < test_size; ++sii) {
+      const auto& sentence=test_corpus.sents[sii];
+      const vector<int>& actions=test_corpus.actions[sii];
+      dwords += sentence.size();
+      {  ComputationGraph hg;
+        parser.log_prob_parser(&hg,sentence,actions,&right,true);
+        double lp = as_scalar(hg.incremental_forward());
+        llh += lp;
+      }
+      ComputationGraph hg;
+      vector<unsigned> pred = parser.log_prob_parser(&hg,sentence,vector<int>(),&right,true);
+      int ti = 0;
+      for (auto a : pred) {
+        if (adict.Convert(a)[0] == 'N') {
+          out << '(' << ntermdict.Convert(action2NTindex.find(a)->second) << ' ';
+        } else if (adict.Convert(a)[0] == 'S') {
+          if (IMPLICIT_REDUCE_AFTER_SHIFT) {
+            out << termdict.Convert(sentence.raw[ti++]) << ") ";
+          } else {
+            if (true) {
+              string preterminal = "XX";
+              out << '(' << preterminal << ' ' << termdict.Convert(sentence.raw[ti++]) << ") ";
+            } else { // use this branch to surpress preterminals
+              out << termdict.Convert(sentence.raw[ti++]) << ' ';
+            }
+          }
+        } else out << ") ";
+      }
+      out << endl;
+      double lp = 0;
+      trs += actions.size();
+    }
+    auto t_end = chrono::high_resolution_clock::now();
+    out.close();
+    double err = (trs - right) / trs;
+    cerr << "Test output in " << pfx << endl;
+    //parser::EvalBResults res = parser::Evaluate("foo", pfx);
+    std::string pid = std::to_string(getpid());
+    std::string evaluable_fname = "evaluable-" + pid + ".txt";
+    std::string evalbout_fname = "evalbout-" + pid + ".txt";
+    std::string python = conf["python"].as<string>();
+    std::string command=python + " remove_dev_unk.py " +  corpus.devdata  + " " + pfx + " > " + evaluable_fname;
+    const char* cmd=command.c_str();
+    system(cmd);
 
-        std::string command2="EVALB/evalb -p EVALB/COLLINS.prm " + corpus.devdata + " " + evaluable_fname + ">" + evalbout_fname;
-        const char* cmd2=command2.c_str();
+    std::string command2="EVALB/evalb -p EVALB/COLLINS.prm " + corpus.devdata + " " + evaluable_fname + ">" + evalbout_fname;
+    const char* cmd2=command2.c_str();
 
-        system(cmd2);
+    system(cmd2);
 
-        std::ifstream evalfile(evalbout_fname);
-        std::string lineS;
-        std::string brackstr="Bracketing FMeasure";
-        double newfmeasure=0.0;
-        std::string strfmeasure="";
-        bool found=0;
-        while (getline(evalfile, lineS) && !newfmeasure){
-                if (lineS.compare(0, brackstr.length(), brackstr) == 0) {
-                        //std::cout<<lineS<<"\n";
-                        strfmeasure=lineS.substr(lineS.size()-5, lineS.size());
-                        std::string::size_type sz;
-                        newfmeasure = std::stod (strfmeasure,&sz);
-                        //std::cout<<strfmeasure<<"\n";
-                }
-        }
+    std::ifstream evalfile(evalbout_fname);
+    std::string lineS;
+    std::string brackstr="Bracketing FMeasure";
+    double newfmeasure=0.0;
+    std::string strfmeasure="";
+    bool found=0;
+    while (getline(evalfile, lineS) && !newfmeasure){
+      if (lineS.compare(0, brackstr.length(), brackstr) == 0) {
+        //std::cout<<lineS<<"\n";
+        strfmeasure=lineS.substr(lineS.size()-5, lineS.size());
+        std::string::size_type sz;
+        newfmeasure = std::stod (strfmeasure,&sz);
+        //std::cout<<strfmeasure<<"\n";
+      }
+    }
 
-       cerr<<"F1score: "<<newfmeasure<<"\n";
+    cerr<<"F1score: "<<newfmeasure<<"\n";
 
   }
 }

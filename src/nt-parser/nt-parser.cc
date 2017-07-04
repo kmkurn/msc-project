@@ -90,6 +90,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("python", po::value<string>()->default_value("python"), "path to python binary")
     ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
     ("start_epoch", po::value<float>(), "Starting epoch")
+    ("t2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -965,6 +966,18 @@ int main(int argc, char** argv) {
     ifstream in(conf["model"].as<string>().c_str());
     boost::archive::text_iarchive ia(in);
     ia >> model;
+  }
+
+  if (conf.count["t2l_norm"]) {
+    if (model.p_t2l) {
+      float l2norm;
+      (model.p_t2l)->squared_l2norm(&l2norm);
+      cout << "Squard t2l L2 norm: " << l2norm << endl;
+      return 0;
+    } else {
+      cerr << "No pretrained embedding found!" << endl;
+      abort();
+    }
   }
 
   //TRAINING

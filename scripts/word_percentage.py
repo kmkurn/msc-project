@@ -3,8 +3,24 @@
 from __future__ import print_function, division
 
 from argparse import ArgumentParser
+from contextlib import contextmanager
+import tarfile
 
 from nltk.tree import Tree
+
+
+@contextmanager
+def open_pretrained_file(filename, gzipped=False):
+    if not gzipped:
+        tar = None
+        f = open(filename)
+    else:
+        tar = tarfile.open(filename)
+        f = tar.extractfile(tar.getnames()[0])
+    yield f
+    f.close()
+    if tar is not None:
+        tar.close()
 
 
 if __name__ == '__main__':
@@ -13,17 +29,19 @@ if __name__ == '__main__':
                      'also exist in pretrained embedding'))
     parser.add_argument('train', help='path to training data, one parsed sentence per line')
     parser.add_argument('pretrained', help='path to pretrained embedding file')
+    parser.add_argument('-z', '--gzip', action='store_true',
+                        help='treat pretrained embedding file as gzip compressed file')
     args = parser.parse_args()
 
     train_words = set()
     with open(args.train) as f:
         for line in f:
-            t = Tree.fromstring(line.strip())
+            t = Tree.fromstring(line.strip().decode('utf-8'))
             for word in t.leaves():
                 train_words.add(word)
 
     pretrained_words = set()
-    with open(args.pretrained) as f:
+    with open_pretrained_file(args.pretrained, gzipped=args.gzip) as f:
         f_iter = iter(f)
         next(f_iter)  # skip first line
         for line in f_iter:

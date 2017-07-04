@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('train', help='path to training data, one parsed sentence per line')
     parser.add_argument('pretrained', help='path to pretrained embedding file')
     parser.add_argument('-z', '--gzip', action='store_true',
-                        help='treat pretrained embedding file as gzip compressed file')
+                        help='treat pretrained embedding file as gzip compressed tarball')
     args = parser.parse_args()
 
     train_words = set()
@@ -41,7 +41,8 @@ if __name__ == '__main__':
                 train_words.add(word)
 
     pretrained_words = set()
-    with open_pretrained_file(args.pretrained, gzipped=args.gzip) as f:
+    gzipped = args.gzip or args.pretrained.endswith('.tar.gz')
+    with open_pretrained_file(args.pretrained, gzipped=gzipped) as f:
         f_iter = iter(f)
         next(f_iter)  # skip first line
         for line in f_iter:

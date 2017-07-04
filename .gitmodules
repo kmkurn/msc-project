@@ -1,3 +1,0 @@
-[submodule "misc/rnng"]
-	path = misc/rnng
-	url = git@github.com:kmkurn/rnng.git

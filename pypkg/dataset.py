@@ -5,9 +5,8 @@ import os
 import re
 
 from nltk.tree import Tree
-from torch.utils.data import Dataset
 
-from src.utils import load_args, dump_args, augment_parser
+from pypkg.utils import load_args, dump_args, augment_parser
 
 
 class PennTreebank:
@@ -260,25 +259,6 @@ class IDNTreebank:
 
     def __iter__(self):
         return islice(self._get_iterator(), self.max_num_sentences)
-
-
-class PennTreebankDataset(Dataset):
-    def __init__(self, ptb_iter):
-        """Penn Treebank dataset.
-
-        This is meant to be used with `torch.utils.data.DataLoader` class.
-
-        Args:
-            ptb_iter: Iterator for or iterable of Penn Treebank corpus. Can be obtained
-                by creating instance of `PennTreebank` class.
-        """
-        self._dataset = list(ptb_iter)
-
-    def __getitem__(self, index):
-        return self._dataset[index]
-
-    def __len__(self):
-        return len(self._dataset)
 
 
 if __name__ == '__main__':

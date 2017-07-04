@@ -2,7 +2,7 @@
 
 from argparse import ArgumentParser
 
-from src.oracle import oracle_iter, gen_oracle_iter
+from pypkg.oracle import oracle_iter, gen_oracle_iter
 
 
 if __name__ == '__main__':

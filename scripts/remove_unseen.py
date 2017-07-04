@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 
 from nltk.tree import Tree
 
-from src.oracle import oracle_iter, gen_oracle_iter
+from pypkg.oracle import oracle_iter, gen_oracle_iter
 
 
 def is_leaf(tree):

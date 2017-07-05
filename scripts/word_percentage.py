@@ -3,24 +3,9 @@
 from __future__ import print_function, division
 
 from argparse import ArgumentParser
-from contextlib import contextmanager
-import tarfile
+import gzip
 
 from nltk.tree import Tree
-
-
-@contextmanager
-def open_pretrained_file(filename, gzipped=False):
-    if not gzipped:
-        tar = None
-        f = open(filename)
-    else:
-        tar = tarfile.open(filename)
-        f = tar.extractfile(tar.getnames()[0])
-    yield f
-    f.close()
-    if tar is not None:
-        tar.close()
 
 
 if __name__ == '__main__':
@@ -30,23 +15,23 @@ if __name__ == '__main__':
     parser.add_argument('train', help='path to training data, one parsed sentence per line')
     parser.add_argument('pretrained', help='path to pretrained embedding file')
     parser.add_argument('-z', '--gzip', action='store_true',
-                        help='treat pretrained embedding file as gzip compressed tarball')
+                        help='treat pretrained embedding file as gzip compressed file')
     args = parser.parse_args()
 
     train_words = set()
     with open(args.train) as f:
         for line in f:
-            t = Tree.fromstring(line.strip().decode('utf-8'))
+            t = Tree.fromstring(line.decode('utf-8').strip())
             for word in t.leaves():
                 train_words.add(word)
 
     pretrained_words = set()
-    gzipped = args.gzip or args.pretrained.endswith('.tar.gz')
-    with open_pretrained_file(args.pretrained, gzipped=gzipped) as f:
+    open_fn = gzip.open if args.gzip or args.pretrained.endswith('.gz') else open
+    with open_fn(args.pretrained) as f:
         f_iter = iter(f)
         next(f_iter)  # skip first line
         for line in f_iter:
-            word = line.split()[0]
+            word = line.decode('utf-8').split()[0]
             pretrained_words.add(word)
 
     pre_words_in_training = train_words.intersection(pretrained_words)

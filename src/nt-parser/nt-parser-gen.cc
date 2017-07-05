@@ -82,6 +82,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
     ("start_epoch", po::value<float>(), "Starting epoch")
     ("tr2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
+    ("w2l_norm", "Compute word to LSTM input weight matrix norm?")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);

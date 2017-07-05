@@ -63,25 +63,25 @@ ClassFactoredSoftmaxBuilder *cfsm = nullptr;
 void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
   po::options_description opts("Configuration options");
   opts.add_options()
-        ("training_data,T", po::value<string>(), "List of Transitions - Training corpus")
-        ("explicit_terminal_reduce,x", "[not recommended] If set, the parser must explicitly process a REDUCE operation to complete a preterminal constituent")
-        ("dropout,D", po::value<float>(), "Use dropout")
-        ("clusters,c", po::value<string>(), "Clusters word clusters file")
-        ("dev_data,d", po::value<string>(), "Development corpus")
-        ("test_data,p", po::value<string>(), "Test corpus")
-        ("eta_decay,e", po::value<float>(), "Start decaying eta after this many epochs")
-        ("model,m", po::value<string>(), "Load saved model from this file")
-        ("layers", po::value<unsigned>()->default_value(2), "number of LSTM layers")
-        ("action_dim", po::value<unsigned>()->default_value(16), "action embedding size")
-        ("input_dim", po::value<unsigned>()->default_value(32), "input embedding size")
-        ("hidden_dim", po::value<unsigned>()->default_value(64), "hidden dimension")
-        ("pretrained_dim", po::value<unsigned>()->default_value(50), "pretrained input dimension")
-        ("lstm_input_dim", po::value<unsigned>()->default_value(60), "LSTM input dimension")
-        ("train,t", "Should training be run?")
-        ("words,w", po::value<string>(), "Pretrained word embeddings")
-        ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
-        ("start_epoch", po::value<float>(), "Starting epoch")
-        ("help,h", "Help");
+    ("training_data,T", po::value<string>(), "List of Transitions - Training corpus")
+    ("explicit_terminal_reduce,x", "[not recommended] If set, the parser must explicitly process a REDUCE operation to complete a preterminal constituent")
+    ("dropout,D", po::value<float>(), "Use dropout")
+    ("clusters,c", po::value<string>(), "Clusters word clusters file")
+    ("dev_data,d", po::value<string>(), "Development corpus")
+    ("test_data,p", po::value<string>(), "Test corpus")
+    ("eta_decay,e", po::value<float>(), "Start decaying eta after this many epochs")
+    ("model,m", po::value<string>(), "Load saved model from this file")
+    ("layers", po::value<unsigned>()->default_value(2), "number of LSTM layers")
+    ("action_dim", po::value<unsigned>()->default_value(16), "action embedding size")
+    ("input_dim", po::value<unsigned>()->default_value(32), "input embedding size")
+    ("hidden_dim", po::value<unsigned>()->default_value(64), "hidden dimension")
+    ("pretrained_dim", po::value<unsigned>()->default_value(50), "pretrained input dimension")
+    ("lstm_input_dim", po::value<unsigned>()->default_value(60), "LSTM input dimension")
+    ("train,t", "Should training be run?")
+    ("words,w", po::value<string>(), "Pretrained word embeddings")
+    ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
+    ("start_epoch", po::value<float>(), "Starting epoch")
+    ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
   po::store(parse_command_line(argc, argv, dcmdline_options), *conf);
@@ -125,33 +125,33 @@ struct ParserBuilder {
   Parameters* p_cW;
 
   explicit ParserBuilder(Model* model, const unordered_map<unsigned, vector<float>>& pretrained) :
-      stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
-      term_lstm(LAYERS, INPUT_DIM, HIDDEN_DIM, model),  // sequence of generated terminals
-      action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
-      const_lstm_fwd(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
-      const_lstm_rev(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
-      p_w(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
-      p_tr(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
-      p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
-      p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
-      p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),
-      p_pbias(model->add_parameters({HIDDEN_DIM})),
-      p_A(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      p_S(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      p_T(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      //p_pbias2(model->add_parameters({HIDDEN_DIM})),
-      //p_A2(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      //p_S2(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
-      p_w2l(model->add_parameters({LSTM_INPUT_DIM, INPUT_DIM})),
-      p_ib(model->add_parameters({LSTM_INPUT_DIM})),
-      p_cbias(model->add_parameters({LSTM_INPUT_DIM})),
-      p_p2a(model->add_parameters({ACTION_SIZE, HIDDEN_DIM})),
-      p_action_start(model->add_parameters({ACTION_DIM})),
-      p_abias(model->add_parameters({ACTION_SIZE})),
+    stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
+    term_lstm(LAYERS, INPUT_DIM, HIDDEN_DIM, model),  // sequence of generated terminals
+    action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
+    const_lstm_fwd(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
+    const_lstm_rev(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
+    p_w(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
+    p_tr(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
+    p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
+    p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
+    p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),
+    p_pbias(model->add_parameters({HIDDEN_DIM})),
+    p_A(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    p_S(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    p_T(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    //p_pbias2(model->add_parameters({HIDDEN_DIM})),
+    //p_A2(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    //p_S2(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    p_w2l(model->add_parameters({LSTM_INPUT_DIM, INPUT_DIM})),
+    p_ib(model->add_parameters({LSTM_INPUT_DIM})),
+    p_cbias(model->add_parameters({LSTM_INPUT_DIM})),
+    p_p2a(model->add_parameters({ACTION_SIZE, HIDDEN_DIM})),
+    p_action_start(model->add_parameters({ACTION_DIM})),
+    p_abias(model->add_parameters({ACTION_SIZE})),
 
-      p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
+    p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
 
-      p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {
+    p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {
     if (pretrained.size() > 0) {
       p_tr = model->add_lookup_parameters(VOCAB_SIZE, {PRETRAINED_DIM});
       for (auto it : pretrained)
@@ -163,32 +163,32 @@ struct ParserBuilder {
     }
   }
 
-// checks to see if a proposed action is valid in discriminative models
-static bool IsActionForbidden_Generative(const string& a, char prev_a, unsigned tsize, unsigned ssize, unsigned nopen_parens) {
-  bool is_shift = (a[0] == 'S' && a[1]=='H');
-  bool is_reduce = (a[0] == 'R' && a[1]=='E');
-  bool is_nt = (a[0] == 'N');
-  assert(is_shift || is_reduce || is_nt);
-  static const unsigned MAX_OPEN_NTS = 100;
-  if (is_nt && nopen_parens > MAX_OPEN_NTS) return true;
-  if (ssize == 1) {
-    if (!is_nt) return true;
+  // checks to see if a proposed action is valid in discriminative models
+  static bool IsActionForbidden_Generative(const string& a, char prev_a, unsigned tsize, unsigned ssize, unsigned nopen_parens) {
+    bool is_shift = (a[0] == 'S' && a[1]=='H');
+    bool is_reduce = (a[0] == 'R' && a[1]=='E');
+    bool is_nt = (a[0] == 'N');
+    assert(is_shift || is_reduce || is_nt);
+    static const unsigned MAX_OPEN_NTS = 100;
+    if (is_nt && nopen_parens > MAX_OPEN_NTS) return true;
+    if (ssize == 1) {
+      if (!is_nt) return true;
+      return false;
+    }
+    // you can't reduce after an NT action
+    if (is_reduce && prev_a == 'N') return true;
     return false;
   }
-  // you can't reduce after an NT action
-  if (is_reduce && prev_a == 'N') return true;
-  return false;
-}
 
-// returns parse actions for input sentence (in training just returns the reference)
-// this lets us use pretrained embeddings, when available, for words that were OOV in the
-// parser training data
-// if sent is empty, generate a sentence
-vector<unsigned> log_prob_parser(ComputationGraph* hg,
-                     const parser::Sentence& sent,
-                     const vector<int>& correct_actions,
-                     double *right,
-                     bool is_evaluation) {
+  // returns parse actions for input sentence (in training just returns the reference)
+  // this lets us use pretrained embeddings, when available, for words that were OOV in the
+  // parser training data
+  // if sent is empty, generate a sentence
+  vector<unsigned> log_prob_parser(ComputationGraph* hg,
+                                   const parser::Sentence& sent,
+                                   const vector<int>& correct_actions,
+                                   double *right,
+                                   bool is_evaluation) {
     vector<unsigned> results;
     vector<string> stack_content;
     stack_content.push_back("ROOT_GUARD");
@@ -586,50 +586,50 @@ int main(int argc, char** argv) {
       ++iter;
       auto time_start = chrono::system_clock::now();
       for (unsigned sii = 0; sii < status_every_i_iterations; ++sii) {
-           if (si == corpus.sents.size()) {
-             si = 0;
-             if (first) { first = false; } else {
-                  sgd.update_epoch();
-                  //sgd.eta /= 2;
-              }
-             //cerr << "NO SHUFFLE" << endl;
-             cerr << "**SHUFFLE\n";
-             random_shuffle(order.begin(), order.end());
-             //sgd.eta /= 2;
-           }
-           tot_seen += 1;
-           auto& sentence = corpus.sents[order[si]];
-	   const vector<int>& actions=corpus.actions[order[si]];
-           ComputationGraph hg;
-           parser.log_prob_parser(&hg,sentence,actions,&right,false);
-           double lp = as_scalar(hg.incremental_forward());
-           if (lp < 0) {
-             cerr << "Log prob < 0 on sentence " << order[si] << ": lp=" << lp << endl;
-             assert(lp >= 0.0);
-           }
-           hg.backward();
-           sgd.update(1.0);
-           llh += lp;
-           ++si;
-           trs += actions.size();
-           words += sentence.size();
+        if (si == corpus.sents.size()) {
+          si = 0;
+          if (first) { first = false; } else {
+            sgd.update_epoch();
+            //sgd.eta /= 2;
+          }
+          //cerr << "NO SHUFFLE" << endl;
+          cerr << "**SHUFFLE\n";
+          random_shuffle(order.begin(), order.end());
+          //sgd.eta /= 2;
+        }
+        tot_seen += 1;
+        auto& sentence = corpus.sents[order[si]];
+        const vector<int>& actions=corpus.actions[order[si]];
+        ComputationGraph hg;
+        parser.log_prob_parser(&hg,sentence,actions,&right,false);
+        double lp = as_scalar(hg.incremental_forward());
+        if (lp < 0) {
+          cerr << "Log prob < 0 on sentence " << order[si] << ": lp=" << lp << endl;
+          assert(lp >= 0.0);
+        }
+        hg.backward();
+        sgd.update(1.0);
+        llh += lp;
+        ++si;
+        trs += actions.size();
+        words += sentence.size();
       }
       sgd.status();
       auto time_now = chrono::system_clock::now();
       auto dur = chrono::duration_cast<chrono::milliseconds>(time_now - time_start);
       cerr << "update #" << iter << " (epoch " << (tot_seen / corpus.sents.size()) <<
-         /*" |time=" << put_time(localtime(&time_now), "%c %Z") << ")\tllh: "<< */
+        /*" |time=" << put_time(localtime(&time_now), "%c %Z") << ")\tllh: "<< */
         ") per-action-ppl: " << exp(llh / trs) << " per-input-ppl: " << exp(llh / words) << " per-sent-ppl: " << exp(llh / status_every_i_iterations) << " err: " << (trs - right) / trs << " [" << dur.count() / (double)status_every_i_iterations << "ms per instance]" << endl;
       llh = trs = right = words = 0;
       static int logc = 0;
       ++logc;
       /*
-      if (logc > 50) {
+        if (logc > 50) {
         // generate random sample
         ComputationGraph cg;
         double x;
         parser.log_prob_parser(&cg, parser::Sentence(), vector<int>(),&x,true);
-      }
+        }
       */
       if (logc % 5 == 0) { // report on dev set
         unsigned dev_size = dev_corpus.size();
@@ -639,16 +639,16 @@ int main(int argc, char** argv) {
         double dwords = 0;
         auto t_start = chrono::high_resolution_clock::now();
         for (unsigned sii = 0; sii < dev_size; ++sii) {
-           const auto& sentence=dev_corpus.sents[sii];
-	   const vector<int>& actions=dev_corpus.actions[sii];
-           dwords += sentence.size();
-           {  ComputationGraph hg;
-              parser.log_prob_parser(&hg,sentence,actions,&right,true);
-              double lp = as_scalar(hg.incremental_forward());
-              llh += lp;
-           }
-           double lp = 0;
-           trs += actions.size();
+          const auto& sentence=dev_corpus.sents[sii];
+          const vector<int>& actions=dev_corpus.actions[sii];
+          dwords += sentence.size();
+          {  ComputationGraph hg;
+            parser.log_prob_parser(&hg,sentence,actions,&right,true);
+            double lp = as_scalar(hg.incremental_forward());
+            llh += lp;
+          }
+          double lp = 0;
+          trs += actions.size();
         }
         auto t_end = chrono::high_resolution_clock::now();
         double err = (trs - right) / trs;

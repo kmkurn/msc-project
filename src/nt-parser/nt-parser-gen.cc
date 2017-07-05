@@ -81,6 +81,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("words,w", po::value<string>(), "Pretrained word embeddings")
     ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
     ("start_epoch", po::value<float>(), "Starting epoch")
+    ("tr2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -549,6 +550,18 @@ int main(int argc, char** argv) {
     ifstream in(conf["model"].as<string>().c_str());
     boost::archive::text_iarchive ia(in);
     ia >> model;
+  }
+
+  if (conf.count("tr2l_norm")) {
+    if (parser.p_tr2l) {
+      float squared_norm;
+      (parser.p_tr2l)->squared_l2norm(&squared_norm);
+      cout << "tr2l L2 norm: " << sqrt(squared_norm) << endl;
+      return 0;
+    } else {
+      cerr << "No pretrained embedding found!" << endl;
+      abort();
+    }
   }
 
   //TRAINING

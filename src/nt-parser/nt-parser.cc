@@ -970,9 +970,9 @@ int main(int argc, char** argv) {
 
   if (conf.count("t2l_norm")) {
     if (parser.p_t2l) {
-      float l2norm;
-      (parser.p_t2l)->squared_l2norm(&l2norm);
-      cout << "Squard t2l L2 norm: " << l2norm << endl;
+      float squared_norm;
+      (parser.p_t2l)->squared_l2norm(&squared_norm);
+      cout << "t2l L2 norm: " << sqrt(squared_norm) << endl;
       return 0;
     } else {
       cerr << "No pretrained embedding found!" << endl;

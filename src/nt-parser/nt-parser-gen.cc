@@ -552,16 +552,31 @@ int main(int argc, char** argv) {
     ia >> model;
   }
 
-  if (conf.count("tr2l_norm")) {
-    if (parser.p_tr2l) {
-      float squared_norm;
-      (parser.p_tr2l)->squared_l2norm(&squared_norm);
-      cout << "tr2l L2 norm: " << sqrt(squared_norm) << endl;
-      return 0;
-    } else {
-      cerr << "No pretrained embedding found!" << endl;
-      abort();
+  if (conf.count("tr2l_norm") || conf.count("w2l_norm")) {
+    if (conf.count("tr2l_norm")) {
+      if (parser.p_tr2l) {
+        float squared_norm;
+        size_t num_scalars;
+        (parser.p_tr2l)->squared_l2norm(&squared_norm);
+        num_scalars = (parser.p_tr2l)->size();
+        cout << "tr2l L2 norm: " << sqrt(squared_norm) << endl;
+        cout << "number of scalars: " << num_scalars << endl;
+        cout << "average: " << sqrt(squared_norm)/num_scalars << endl;
+      } else {
+        cerr << "No pretrained embedding found!" << endl;
+        abort();
+      }
     }
+    if (conf.count("w2l_norm")) {
+      float squared_norm;
+      size_t num_scalars;
+      (parser.p_w2l)->squared_l2norm(&squared_norm);
+      num_scalars = (parser.p_w2l)->size();
+      cout << "w2l L2 norm: " << sqrt(squared_norm) << endl;
+      cout << "number of scalars: " << num_scalars << endl;
+      cout << "average: " << sqrt(squared_norm)/num_scalars << endl;
+    }
+    return 0;
   }
 
   //TRAINING

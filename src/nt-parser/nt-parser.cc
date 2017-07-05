@@ -91,6 +91,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
     ("start_epoch", po::value<float>(), "Starting epoch")
     ("t2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
+    ("w2l_norm", "Compute word to LSTM input weight matrix norm?")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -968,16 +969,31 @@ int main(int argc, char** argv) {
     ia >> model;
   }
 
-  if (conf.count("t2l_norm")) {
-    if (parser.p_t2l) {
-      float squared_norm;
-      (parser.p_t2l)->squared_l2norm(&squared_norm);
-      cout << "t2l L2 norm: " << sqrt(squared_norm) << endl;
-      return 0;
-    } else {
-      cerr << "No pretrained embedding found!" << endl;
-      abort();
+  if (conf.count("t2l_norm") || conf.count("w2l_norm")) {
+    if (conf.count("t2l_norm")) {
+      if (parser.p_t2l) {
+        float squared_norm;
+        size_t num_scalars;
+        (parser.p_t2l)->squared_l2norm(&squared_norm);
+        num_scalars = (parser.p_t2l)->size();
+        cout << "t2l L2 norm: " << sqrt(squared_norm) << endl;
+        cout << "number of scalars: " << num_scalars << endl;
+        cout << "average: " << sqrt(squared_norm)/num_scalars << endl;
+      } else {
+        cerr << "No pretrained embedding found!" << endl;
+        abort();
+      }
     }
+    if (conf.count("w2l_norm")) {
+      float squared_norm;
+      size_t num_scalars;
+      (parser.p_w2l)->squared_l2norm(&squared_norm);
+      num_scalars = (parser.p_w2l)->size();
+      cout << "w2l L2 norm: " << sqrt(squared_norm) << endl;
+      cout << "number of scalars: " << num_scalars << endl;
+      cout << "average: " << sqrt(squared_norm)/num_scalars << endl;
+    }
+    return 0;
   }
 
   //TRAINING

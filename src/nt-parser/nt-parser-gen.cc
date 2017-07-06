@@ -662,7 +662,7 @@ int main(int argc, char** argv) {
         parser.log_prob_parser(&cg, parser::Sentence(), vector<int>(),&x,true);
         }
       */
-      if (logc % report_every == 0) { // report on dev set
+      if (logc % report_every == 1) { // report on dev set
         unsigned dev_size = dev_corpus.size();
         double llh = 0;
         double trs = 0;
@@ -685,7 +685,7 @@ int main(int argc, char** argv) {
         double err = (trs - right) / trs;
         //parser::EvalBResults res = parser::Evaluate("foo", pfx);
         cerr << "  **dev (iter=" << iter << " epoch=" << (tot_seen / corpus.size()) << ")\tllh=" << llh << " ppl: " << exp(llh / dwords) << " err: " << err << "\t[" << dev_size << " sents in " << chrono::duration<double, milli>(t_end-t_start).count() << " ms]" << endl;
-        if (llh < best_dev_llh && (tot_seen / corpus.size()) > 1.0) {
+        if (llh < best_dev_llh) {
           cerr << "  new best...writing model to " << fname << " ...\n";
           best_dev_llh = llh;
           ofstream out(fname);

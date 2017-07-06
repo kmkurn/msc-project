@@ -84,6 +84,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("tr2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
     ("w2l_norm", "Compute word to LSTM input weight matrix norm?")
     ("report_every", po::value<unsigned>()->default_value(25), "Report on devset every X updates")
+    ("patience", po::value<unsigned>()->default_value(10), "How many times to wait before training is stopped early")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -611,8 +612,10 @@ int main(int argc, char** argv) {
     bool first = true;
     int iter = -1;
     double best_dev_llh = 9e99;
+    unsigned counter = 0;
+    unsigned patience = conf["patience"].as<unsigned>();
     //cerr << "TRAINING STARTED AT: " << put_time(localtime(&time_start), "%c %Z") << endl;
-    while(!requested_stop) {
+    while(!requested_stop && counter < patience) {
       ++iter;
       auto time_start = chrono::system_clock::now();
       for (unsigned sii = 0; sii < status_every_i_iterations; ++sii) {
@@ -686,6 +689,7 @@ int main(int argc, char** argv) {
         //parser::EvalBResults res = parser::Evaluate("foo", pfx);
         cerr << "  **dev (iter=" << iter << " epoch=" << (tot_seen / corpus.size()) << ")\tllh=" << llh << " ppl: " << exp(llh / dwords) << " err: " << err << "\t[" << dev_size << " sents in " << chrono::duration<double, milli>(t_end-t_start).count() << " ms]" << endl;
         if (llh < best_dev_llh) {
+          counter = 0;
           cerr << "  new best...writing model to " << fname << " ...\n";
           best_dev_llh = llh;
           ofstream out(fname);
@@ -702,6 +706,8 @@ int main(int argc, char** argv) {
             }
             softlinkCreated = true;
           }
+        } else {
+          counter++;
         }
       }
     }

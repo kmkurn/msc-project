@@ -613,6 +613,8 @@ int main(int argc, char** argv) {
     bool first = true;
     int iter = -1;
     double best_dev_llh = 9e99;
+    unsigned report_every = conf["report_every"].as<unsigned>();
+    unsigned generate_every = conf["generate_every"].as<unsigned>();
     unsigned counter = 0;
     unsigned patience = conf["patience"].as<unsigned>();
     //cerr << "TRAINING STARTED AT: " << put_time(localtime(&time_start), "%c %Z") << endl;
@@ -657,8 +659,6 @@ int main(int argc, char** argv) {
       llh = trs = right = words = 0;
       static int logc = 0;
       ++logc;
-      unsigned report_every = conf["report_every"].as<unsigned>();
-      unsigned generate_every = conf["generate_every"].as<unsigned>();
       if (logc % generate_every == 1) {
         // generate random sample
         ComputationGraph cg;

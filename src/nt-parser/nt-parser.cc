@@ -1027,6 +1027,7 @@ int main(int argc, char** argv) {
     int iter = -1;
     double best_dev_err = 9e99;
     double bestf1=0.0;
+    unsigned report_every = conf["report_every"].as<unsigned>();
     unsigned counter = 0;
     unsigned patience = conf["patience"].as<unsigned>();
     //cerr << "TRAINING STARTED AT: " << put_time(localtime(&time_start), "%c %Z") << endl;
@@ -1066,7 +1067,6 @@ int main(int argc, char** argv) {
       llh = trs = right = words = 0;
 
       static int logc = 0;
-      unsigned report_every = conf["report_every"].as<unsigned>();
       ++logc;
       if (logc % report_every == 1) { // report on dev set
         unsigned dev_size = dev_corpus.size();

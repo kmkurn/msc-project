@@ -92,6 +92,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("start_epoch", po::value<float>(), "Starting epoch")
     ("t2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
     ("w2l_norm", "Compute word to LSTM input weight matrix norm?")
+    ("report_every", po::value<unsigned>()->default_value(25), "Report on devset every X updates")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -1062,8 +1063,9 @@ int main(int argc, char** argv) {
       llh = trs = right = words = 0;
 
       static int logc = 0;
+      unsigned report_every = conf["report_every"].as<unsigned>();
       ++logc;
-      if (logc % 25 == 1) { // report on dev set
+      if (logc % report_every == 1) { // report on dev set
         unsigned dev_size = dev_corpus.size();
         double llh = 0;
         double trs = 0;

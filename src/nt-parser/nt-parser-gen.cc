@@ -109,9 +109,7 @@ struct ParserBuilder {
   LSTMBuilder const_lstm_fwd;
   LSTMBuilder const_lstm_rev;
   LookupParameters* p_w; // word embeddings
-  #ifdef ENABLE_PRETRAINED
   LookupParameters* p_tr; // pretrained word embeddings (not updated)
-  #endif
   LookupParameters* p_nt; // nonterminal embeddings
   LookupParameters* p_ntup; // nonterminal embeddings when used in a composed representation
   LookupParameters* p_a; // input action embeddings
@@ -142,9 +140,7 @@ struct ParserBuilder {
     const_lstm_fwd(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
     const_lstm_rev(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
     p_w(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
-    #ifdef ENABLE_PRETRAINED
     p_tr(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
-    #endif
     p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
     p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
     p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),

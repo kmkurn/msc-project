@@ -81,8 +81,10 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("words,w", po::value<string>(), "Pretrained word embeddings")
     ("model_dir", po::value<string>()->default_value("."), "Directory to save the model in")
     ("start_epoch", po::value<float>(), "Starting epoch")
+    #ifdef ENABLE_PRETRAINED
     ("tr2l_norm", "Compute pretrained to LSTM input weight matrix norm?")
     ("w2l_norm", "Compute word to LSTM input weight matrix norm?")
+    #endif
     ("report_every", po::value<unsigned>()->default_value(25), "Report on devset every X updates")
     ("generate_every", po::value<unsigned>()->default_value(100), "Generate a sample every X updates")
     ("patience", po::value<unsigned>()->default_value(10), "How many times to wait before training is stopped early")
@@ -107,7 +109,9 @@ struct ParserBuilder {
   LSTMBuilder const_lstm_fwd;
   LSTMBuilder const_lstm_rev;
   LookupParameters* p_w; // word embeddings
+  #ifdef ENABLE_PRETRAINED
   LookupParameters* p_tr; // pretrained word embeddings (not updated)
+  #endif
   LookupParameters* p_nt; // nonterminal embeddings
   LookupParameters* p_ntup; // nonterminal embeddings when used in a composed representation
   LookupParameters* p_a; // input action embeddings
@@ -118,9 +122,11 @@ struct ParserBuilder {
   //Parameters* p_pbias2; // parser state bias
   //Parameters* p_A2; // action lstm to parser state
   //Parameters* p_S2; // stack lstm to parser state
+  #ifdef ENABLE_PRETRAINED
   Parameters* p_w2l; // word to LSTM input
   Parameters* p_tr2l; // pretrained word embeddings to LSTM input
   Parameters* p_ib; // LSTM input bias
+  #endif
   Parameters* p_cbias; // composition function bias
   Parameters* p_p2a;   // parser state to action
   Parameters* p_action_start;  // action bias
@@ -136,7 +142,9 @@ struct ParserBuilder {
     const_lstm_fwd(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
     const_lstm_rev(1, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
     p_w(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
+    #ifdef ENABLE_PRETRAINED
     p_tr(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
+    #endif
     p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
     p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
     p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),
@@ -147,8 +155,10 @@ struct ParserBuilder {
     //p_pbias2(model->add_parameters({HIDDEN_DIM})),
     //p_A2(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
     //p_S2(model->add_parameters({HIDDEN_DIM, HIDDEN_DIM})),
+    #ifdef ENABLE_PRETRAINED
     p_w2l(model->add_parameters({LSTM_INPUT_DIM, INPUT_DIM})),
     p_ib(model->add_parameters({LSTM_INPUT_DIM})),
+    #endif
     p_cbias(model->add_parameters({LSTM_INPUT_DIM})),
     p_p2a(model->add_parameters({ACTION_SIZE, HIDDEN_DIM})),
     p_action_start(model->add_parameters({ACTION_DIM})),
@@ -158,6 +168,7 @@ struct ParserBuilder {
 
     p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {
     if (pretrained.size() > 0) {
+    #ifdef ENABLE_PRETRAINED
       p_tr = model->add_lookup_parameters(VOCAB_SIZE, {PRETRAINED_DIM});
       for (auto it : pretrained)
         p_tr->Initialize(it.first, it.second);
@@ -165,6 +176,10 @@ struct ParserBuilder {
     } else {
       p_tr = nullptr;
       p_tr2l = nullptr;
+    #else
+      cerr << "Pretrained embedding is not implemented." << endl;
+      abort();
+    #endif
     }
   }
 
@@ -234,11 +249,13 @@ struct ParserBuilder {
     //Expression S2 = parameter(*hg, p_S2);
     //Expression A2 = parameter(*hg, p_A2);
 
+    #ifdef ENABLE_PRETRAINED
     Expression ib = parameter(*hg, p_ib);
     Expression w2l = parameter(*hg, p_w2l);
     Expression tr2l;
     if (p_tr2l)
       tr2l = parameter(*hg, p_tr2l);
+    #endif
     Expression cbias = parameter(*hg, p_cbias);
     Expression p2a = parameter(*hg, p_p2a);
     Expression abias = parameter(*hg, p_abias);
@@ -356,10 +373,12 @@ struct ParserBuilder {
         assert (wordid != 0);
         stack_content.push_back(termdict.Convert(wordid)); //add the string of the word to the stack
         Expression word = lookup(*hg, p_w, wordid);
+        #ifdef ENABLE_PRETRAINED
         if (p_tr && pretrained.count(sent.lc[termc])) {
           Expression tr = const_lookup(*hg, p_tr, sent.lc[termc]);
           word = rectify(affine_transform({ib, w2l, word, tr2l, tr}));
         }
+        #endif
         terms.push_back(word);
         term_lstm.add_input(word);
         stack.push_back(word);
@@ -466,6 +485,10 @@ void signal_callback_handler(int /* signum */) {
 }
 
 int main(int argc, char** argv) {
+  #ifdef HOHOHIHE
+  cerr << "HOHOHIHE" << endl;
+  abort();
+  #endif
   cnn::Initialize(argc, argv);
 
   cerr << "COMMAND LINE:";
@@ -556,6 +579,7 @@ int main(int argc, char** argv) {
     ia >> model;
   }
 
+  #ifdef ENABLE_PRETRAINED
   if (conf.count("tr2l_norm") || conf.count("w2l_norm")) {
     if (conf.count("tr2l_norm")) {
       if (parser.p_tr2l) {
@@ -582,6 +606,7 @@ int main(int argc, char** argv) {
     }
     return 0;
   }
+  #endif
 
   //TRAINING
   if (conf.count("train")) {

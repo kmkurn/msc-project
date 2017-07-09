@@ -23,6 +23,11 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 add_subdirectory(cnn/cnn)
+
+option(DEFINE_ENABLE_PRETRAINED "Enable pretrained embeddings for nt-parser-gen" ON)
+if(DEFINE_ENABLE_PRETRAINED)
+  add_definitions(-DENABLE_PRETRAINED)
+endif(DEFINE_ENABLE_PRETRAINED)
+
 add_subdirectory(nt-parser)
 # add_subdirectory(cnn/examples)
-

@@ -319,6 +319,8 @@ struct ParserBuilder {
           if (p < 0.0) { break; }
         }
         if (w == current_valid_actions.size()) w--;
+        assert(w >= 0);
+        assert(w < current_valid_actions.size());
         action = current_valid_actions[w];
         const string& a = adict.Convert(action);
         if (a[0] == 'R') cerr << ")";
@@ -370,6 +372,7 @@ struct ParserBuilder {
         stack_content.push_back(termdict.Convert(wordid)); //add the string of the word to the stack
         Expression word = lookup(*hg, p_w, wordid);
         #ifdef ENABLE_PRETRAINED
+        assert(termc < sent.size());
         if (p_tr && pretrained.count(sent.lc[termc])) {
           Expression tr = const_lookup(*hg, p_tr, sent.lc[termc]);
           word = rectify(affine_transform({ib, w2l, word, tr2l, tr}));

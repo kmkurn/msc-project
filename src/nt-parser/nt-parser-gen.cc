@@ -376,14 +376,15 @@ struct ParserBuilder {
         if (sample) {
           if (p_tr && pretrained.count(wordid)) {
             tr = const_lookup(*hg, p_tr, wordid);
+            w = rectify(affine_transform({ib, w2l, w, tr2l, tr}));
           }
         } else {
           assert(termc < sent.size());
           if (p_tr && pretrained.count(sent.lc[termc])) {
             tr = const_lookup(*hg, p_tr, sent.lc[termc]);
+            w = rectify(affine_transform({ib, w2l, w, tr2l, tr}));
           }
         }
-        w = rectify(affine_transform({ib, w2l, w, tr2l, tr}));
         #endif
         terms.push_back(w);
         term_lstm.add_input(w);

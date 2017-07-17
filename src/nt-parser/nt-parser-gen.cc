@@ -484,10 +484,6 @@ void signal_callback_handler(int /* signum */) {
 }
 
 int main(int argc, char** argv) {
-  #ifdef HOHOHIHE
-  cerr << "HOHOHIHE" << endl;
-  abort();
-  #endif
   cnn::Initialize(argc, argv);
 
   cerr << "COMMAND LINE:";

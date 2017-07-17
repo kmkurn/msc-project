@@ -370,18 +370,25 @@ struct ParserBuilder {
         }
         assert (wordid != 0);
         stack_content.push_back(termdict.Convert(wordid)); //add the string of the word to the stack
-        Expression word = lookup(*hg, p_w, wordid);
+        Expression w = lookup(*hg, p_w, wordid);
         #ifdef ENABLE_PRETRAINED
-        assert(termc < sent.size());
-        if (p_tr && pretrained.count(sent.lc[termc])) {
-          Expression tr = const_lookup(*hg, p_tr, sent.lc[termc]);
-          word = rectify(affine_transform({ib, w2l, word, tr2l, tr}));
+        Expression tr;
+        if (sample) {
+          if (p_tr && pretrained.count(wordid)) {
+            tr = const_lookup(*hg, p_tr, wordid);
+          }
+        } else {
+          assert(termc < sent.size());
+          if (p_tr && pretrained.count(sent.lc[termc])) {
+            tr = const_lookup(*hg, p_tr, sent.lc[termc]);
+          }
         }
+        w = rectify(affine_transform({ib, w2l, w, tr2l, tr}));
         #endif
-        terms.push_back(word);
-        term_lstm.add_input(word);
-        stack.push_back(word);
-        stack_lstm.add_input(word);
+        terms.push_back(w);
+        term_lstm.add_input(w);
+        stack.push_back(w);
+        stack_lstm.add_input(w);
         is_open_paren.push_back(-1);
         ++termc;
       } else if (ac == 'N') { // NT

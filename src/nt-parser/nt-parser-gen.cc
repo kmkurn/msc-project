@@ -29,7 +29,6 @@
 #include "nt-parser/oracle.h"
 #include "nt-parser/pretrained.h"
 #include "nt-parser/compressed-fstream.h"
-#include "nt-parser/eval.h"
 
 // dictionaries
 cnn::Dict termdict, ntermdict, adict, posdict;
@@ -714,7 +713,6 @@ int main(int argc, char** argv) {
         }
         auto t_end = chrono::high_resolution_clock::now();
         double err = (trs - right) / trs;
-        //parser::EvalBResults res = parser::Evaluate("foo", pfx);
         cerr << "  **dev (iter=" << iter << " epoch=" << (tot_seen / corpus.size()) << ")\tllh=" << llh << " ppl: " << exp(llh / dwords) << " err: " << err << "\t[" << dev_size << " sents in " << chrono::duration<double, milli>(t_end-t_start).count() << " ms]" << endl;
         if (llh < best_dev_llh) {
           counter = 0;

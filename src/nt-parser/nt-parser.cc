@@ -28,7 +28,6 @@
 #include "nt-parser/oracle.h"
 #include "nt-parser/pretrained.h"
 #include "nt-parser/compressed-fstream.h"
-#include "nt-parser/eval.h"
 
 // dictionaries
 cnn::Dict termdict, ntermdict, adict, posdict;
@@ -1115,7 +1114,6 @@ int main(int argc, char** argv) {
         out.close();
         double err = (trs - right) / trs;
         cerr << "Dev output in " << pfx << endl;
-        //parser::EvalBResults res = parser::Evaluate("foo", pfx);
         std::string pid = std::to_string(getpid());
         std::string evaluable_fname = "evaluable-" + pid + ".txt";
         std::string evalbout_fname = "evalbout-" + pid + ".txt";
@@ -1252,7 +1250,6 @@ int main(int argc, char** argv) {
     out.close();
     double err = (trs - right) / trs;
     cerr << "Test output in " << pfx << endl;
-    //parser::EvalBResults res = parser::Evaluate("foo", pfx);
     std::string pid = std::to_string(getpid());
     std::string evaluable_fname = "evaluable-" + pid + ".txt";
     std::string evalbout_fname = "evalbout-" + pid + ".txt";

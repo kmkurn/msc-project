@@ -24,9 +24,11 @@
 #include "cnn/rnn.h"
 #include "cnn/dict.h"
 #include "cnn/cfsm-builder.h"
+#include "cnn/model.h"
 
 #include "nt-parser/oracle.h"
 #include "nt-parser/compressed-fstream.h"
+#include "nt-parser/char-embeddings.h"
 
 // dictionaries
 cnn::Dict termdict, ntermdict, adict, posdict, chardict;
@@ -37,7 +39,6 @@ unsigned LAYERS = 2;
 unsigned INPUT_DIM = 40;
 unsigned HIDDEN_DIM = 60;
 unsigned ACTION_DIM = 36;
-unsigned PRETRAINED_DIM = 50;
 unsigned LSTM_INPUT_DIM = 60;
 unsigned POS_DIM = 10;
 
@@ -85,6 +86,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("start_epoch", po::value<float>(), "Starting epoch")
     ("report_every", po::value<unsigned>()->default_value(25), "Report on devset every X updates")
     ("patience", po::value<unsigned>()->default_value(10), "How many times to wait before training is stopped early")
+    ("char_embeddings_model", po::value<string>()->default_value("addition"), "char embeddings model to use")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -105,7 +107,6 @@ struct ParserBuilder {
   LSTMBuilder action_lstm;
   LSTMBuilder const_lstm_fwd;
   LSTMBuilder const_lstm_rev;
-  LookupParameters* p_c; // character embeddings
   LookupParameters* p_nt; // nonterminal embeddings
   LookupParameters* p_ntup; // nonterminal embeddings when used in a composed representation
   LookupParameters* p_a; // input action embeddings
@@ -125,15 +126,14 @@ struct ParserBuilder {
   Parameters* p_abias;  // action bias
   Parameters* p_buffer_guard;  // end of buffer
   Parameters* p_stack_guard;  // end of stack
-
   Parameters* p_cW;
+  parser::char_embs::BaseModel& char_embs_model;
 
-  explicit ParserBuilder(Model* model) :
+  explicit ParserBuilder(Model* model, parser::char_embs::BaseModel& char_embs_model) :
     stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
     action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
     const_lstm_fwd(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
     const_lstm_rev(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
-    p_c(model->add_lookup_parameters(VOCAB_SIZE, {INPUT_DIM})),
     p_nt(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
     p_ntup(model->add_lookup_parameters(NT_SIZE, {LSTM_INPUT_DIM})),
     p_a(model->add_lookup_parameters(ACTION_SIZE, {ACTION_DIM})),
@@ -151,7 +151,8 @@ struct ParserBuilder {
     p_buffer_guard(model->add_parameters({LSTM_INPUT_DIM})),
     p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
 
-    p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {
+    p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})),
+    char_embs_model(char_embs_model) {
     if (IMPLICIT_REDUCE_AFTER_SHIFT) {
       p_ptbias = model->add_parameters({LSTM_INPUT_DIM}); // preterminal bias (used with IMPLICIT_REDUCE_AFTER_SHIFT)
       p_ptW = model->add_parameters({LSTM_INPUT_DIM, 2*LSTM_INPUT_DIM});    // preterminal W (used with IMPLICIT_REDUCE_AFTER_SHIFT)
@@ -199,15 +200,14 @@ struct ParserBuilder {
     return false;
   }
 
-  Expression compute_word_embedding(ComputationGraph* hg, int wordid) {
-    string word = termdict.Convert(wordid);
-    vector<Expression> char_embs;
-    for (char ch : word) {
-      string s(1, ch);
-      int charid = chardict.Convert(s);
-      char_embs.push_back(lookup(*hg, p_c, charid));
+  Expression compute_word_embedding(ComputationGraph* cg, int wordid) {
+    string w = termdict.Convert(wordid);
+    parser::char_embs::word_t word;
+    for (char c : w) {
+      string s(1, c);
+      word.push_back(chardict.Convert(s));
     }
-    return sum(char_embs);
+    return char_embs_model.compute_word_embedding(cg, word);
   }
 
   // *** if correct_actions is empty, this runs greedy decoding ***
@@ -603,7 +603,18 @@ int main(int argc, char** argv) {
   for (unsigned i = 0; i < adict.size(); ++i)
     possible_actions[i] = i;
 
-  ParserBuilder parser(&model);
+  cerr << "characters vocab size: " << VOCAB_SIZE << endl;
+
+  parser::char_embs::BaseModel* char_embs_model;
+  string ce_model = conf["char_embeddings_model"].as<string>();
+  if (ce_model == "addition") {
+    char_embs_model = new parser::char_embs::AdditionModel(&model, VOCAB_SIZE, INPUT_DIM);
+  } else {
+    cerr << "Char embeddings model of '" << ce_model << "' is not recognized" << endl;
+    abort();
+  }
+
+  ParserBuilder parser(&model, *char_embs_model);
   if (conf.count("model")) {
     ifstream in(conf["model"].as<string>().c_str());
     boost::archive::text_iarchive ia(in);

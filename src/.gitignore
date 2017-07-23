@@ -1,9 +1,6 @@
 build/*
 EVALB
 
-# Emacs dir locals
-.dir-locals.el
-
 # Python cache files
 *.pyc
 

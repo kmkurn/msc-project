@@ -28,9 +28,10 @@
 
 #include "nt-parser/oracle.h"
 #include "nt-parser/compressed-fstream.h"
+#include "nt-parser/char-embeddings.h"
 
 // dictionaries
-cnn::Dict termdict, ntermdict, adict, posdict;
+cnn::Dict termdict, ntermdict, adict, posdict, chardict;
 
 volatile bool requested_stop = false;
 unsigned kSOS = 0;
@@ -78,6 +79,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("report_every", po::value<unsigned>()->default_value(25), "Report on devset every X updates")
     ("generate_every", po::value<unsigned>()->default_value(100), "Generate a sample every X updates")
     ("patience", po::value<unsigned>()->default_value(10), "How many times to wait before training is stopped early")
+    ("char_embeddings_model", po::value<string>()->default_value("addition"), "char embeddings model to use")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -114,10 +116,10 @@ struct ParserBuilder {
   Parameters* p_action_start;  // action bias
   Parameters* p_abias;  // action bias
   Parameters* p_stack_guard;  // end of stack
-
   Parameters* p_cW;
+  parser::char_embs::BaseModel& char_embs_model;
 
-  explicit ParserBuilder(Model* model) :
+  explicit ParserBuilder(Model* model, parser::char_embs::BaseModel& char_embs_model) :
     stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
     term_lstm(LAYERS, INPUT_DIM, HIDDEN_DIM, model),  // sequence of generated terminals
     action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
@@ -141,7 +143,8 @@ struct ParserBuilder {
 
     p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
 
-    p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})) {}
+    p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})),
+    char_embs_model(char_embs_model) {}
 
   // checks to see if a proposed action is valid in discriminative models
   static bool IsActionForbidden_Generative(const string& a, char prev_a, unsigned ssize, unsigned nopen_parens) {
@@ -158,6 +161,16 @@ struct ParserBuilder {
     // you can't reduce after an NT action
     if (is_reduce && prev_a == 'N') return true;
     return false;
+  }
+
+  Expression compute_word_embedding(ComputationGraph* cg, int wordid) {
+    string w = termdict.Convert(wordid);
+    parser::char_embs::word_t word;
+    for (char c : w) {
+      string s(1, c);
+      word.push_back(chardict.Convert(s));
+    }
+    return char_embs_model.compute_word_embedding(cg, word);
   }
 
   // returns parse actions for input sentence (in training just returns the reference)
@@ -326,7 +339,7 @@ struct ParserBuilder {
         }
         assert (wordid != 0);
         stack_content.push_back(termdict.Convert(wordid)); //add the string of the word to the stack
-        Expression w = lookup(*hg, p_w, wordid);
+        Expression w = compute_word_embedding(hg, wordid);
         terms.push_back(w);
         term_lstm.add_input(w);
         stack.push_back(w);
@@ -486,6 +499,17 @@ int main(int argc, char** argv) {
   ntermdict.Freeze();
   posdict.Freeze();
 
+  // populate chardict
+  for (auto& sent : corpus.sents) {
+    for (auto wordid : sent.raw) {
+      for (char ch : termdict.Convert(wordid)) {
+        string s(1, ch);
+        chardict.Convert(s);
+      }
+    }
+  }
+  chardict.Freeze();
+
   if (conf.count("dev_data")) {
     cerr << "Loading validation set\n";
     dev_corpus.load_oracle(conf["dev_data"].as<string>());
@@ -506,13 +530,24 @@ int main(int argc, char** argv) {
   }
 
   NT_SIZE = ntermdict.size();
-  VOCAB_SIZE = termdict.size();
+  VOCAB_SIZE = chardict.size();
   ACTION_SIZE = adict.size();
   possible_actions.resize(adict.size());
   for (unsigned i = 0; i < adict.size(); ++i)
     possible_actions[i] = i;
 
-  ParserBuilder parser(&model);
+  cerr << "characters vocab size: " << VOCAB_SIZE << endl;
+
+  parser::char_embs::BaseModel* char_embs_model;
+  string ce_model = conf["char_embeddings_model"].as<string>();
+  if (ce_model == "addition") {
+    char_embs_model = new parser::char_embs::AdditionModel(&model, VOCAB_SIZE, INPUT_DIM);
+  } else {
+    cerr << "Char embeddings model of '" << ce_model << "' is not recognized" << endl;
+    abort();
+  }
+
+  ParserBuilder parser(&model, *char_embs_model);
   if (conf.count("model")) {
     ifstream in(conf["model"].as<string>().c_str());
     boost::archive::text_iarchive ia(in);

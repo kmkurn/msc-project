@@ -548,6 +548,15 @@ int main(int argc, char** argv) {
   corpus.load_oracle(conf["training_data"].as<string>(), true);
   corpus.load_bdata(conf["bracketing_dev_data"].as<string>());
 
+  // freeze dictionaries so we don't accidentaly load OOVs
+  termdict.Freeze();
+  termdict.SetUnk("UNK"); // we don't actually expect to use this often
+  // since the Oracles are required to be "pre-UNKified", but this prevents
+  // problems with UNKifying the lowercased data which needs to be loaded
+  adict.Freeze();
+  ntermdict.Freeze();
+  posdict.Freeze();
+
   // populate chardict
   for (auto& sent : corpus.sents) {
     for (auto wordid : sent.raw) {
@@ -557,15 +566,6 @@ int main(int argc, char** argv) {
       }
     }
   }
-
-  // freeze dictionaries so we don't accidentaly load OOVs
-  termdict.Freeze();
-  termdict.SetUnk("UNK"); // we don't actually expect to use this often
-  // since the Oracles are required to be "pre-UNKified", but this prevents
-  // problems with UNKifying the lowercased data which needs to be loaded
-  adict.Freeze();
-  ntermdict.Freeze();
-  posdict.Freeze();
   chardict.Freeze();
 
   {  // compute the singletons in the parser's training data

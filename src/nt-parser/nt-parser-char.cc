@@ -531,6 +531,7 @@ int main(int argc, char** argv) {
   os << conf["model_dir"].as<string>() << "/"
      << "ntparse"
      << (USE_POS ? "_pos" : "")
+     << "_char"
      << '_' << IMPLICIT_REDUCE_AFTER_SHIFT
      << '_' << LAYERS
      << '_' << INPUT_DIM

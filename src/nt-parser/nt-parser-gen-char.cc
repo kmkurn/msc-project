@@ -472,7 +472,7 @@ int main(int argc, char** argv) {
   }
   ostringstream os;
   os << conf["model_dir"].as<string>() << "/"
-     << "ntparse_gen"
+     << "ntparse_gen_char"
      << "_D" << DROPOUT
      << '_' << LAYERS
      << '_' << INPUT_DIM

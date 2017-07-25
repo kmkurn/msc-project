@@ -334,7 +334,7 @@ struct ParserBuilder {
           cerr << " " << termdict.Convert(wordid);
         } else {
           assert(termc < sent.size());
-          wordid = sent.raw[termc];
+          wordid = sent.raw[termc]; // in gen RNNG, raw = unkified
           log_probs.push_back(-cfsm->neg_log_softmax(nlp_t, wordid));
         }
         assert (wordid != 0);
@@ -501,7 +501,7 @@ int main(int argc, char** argv) {
 
   // populate chardict
   for (auto& sent : corpus.sents) {
-    for (auto wordid : sent.raw) {
+    for (auto wordid : sent.raw) { // in gen RNNG, raw = unkified
       for (char ch : termdict.Convert(wordid)) {
         string s(1, ch);
         chardict.Convert(s);
@@ -509,6 +509,7 @@ int main(int argc, char** argv) {
     }
   }
   chardict.Freeze();
+  chardict.SetUnk("UNK");
 
   if (conf.count("dev_data")) {
     cerr << "Loading validation set\n";

@@ -277,6 +277,8 @@ struct ParserBuilder {
     // in the discriminative model, here we set up the buffer contents
     for (unsigned i = 0; i < sent.size(); ++i) {
       int wordid = sent.raw[i]; // this will be equal to unk at dev/test
+      if (build_training_graph && singletons.size() > (size_t) wordid && singletons[wordid] && rand01() > 0.5)
+        wordid = sent.unk[i];
       Expression w = compute_word_embedding(hg, wordid);
 
       vector<Expression> args = {ib, w2l, w}; // learn embeddings
@@ -559,7 +561,7 @@ int main(int argc, char** argv) {
 
   // populate chardict
   for (auto& sent : corpus.sents) {
-    for (auto wordid : sent.raw) {
+    for (auto wordid : sent.unk) {
       for (char ch : termdict.Convert(wordid)) {
         string s(1, ch);
         chardict.Convert(s);
@@ -567,6 +569,7 @@ int main(int argc, char** argv) {
     }
   }
   chardict.Freeze();
+  chardict.SetUnk("UNK");
 
   {  // compute the singletons in the parser's training data
     unordered_map<unsigned, unsigned> counts;

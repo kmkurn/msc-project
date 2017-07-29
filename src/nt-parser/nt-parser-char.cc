@@ -28,7 +28,7 @@
 
 #include "nt-parser/oracle.h"
 #include "nt-parser/compressed-fstream.h"
-#include "nt-parser/char-embeddings.h"
+#include "nt-parser/embeddings.h"
 
 // dictionaries
 cnn::Dict termdict, ntermdict, adict, posdict, chardict;
@@ -57,6 +57,8 @@ using namespace cnn;
 using namespace std;
 namespace po = boost::program_options;
 
+using parser::embeddings::BaseModel;
+namespace chr = parser::embeddings::character;
 
 vector<unsigned> possible_actions;
 vector<bool> singletons; // used during training
@@ -127,9 +129,9 @@ struct ParserBuilder {
   Parameters* p_buffer_guard;  // end of buffer
   Parameters* p_stack_guard;  // end of stack
   Parameters* p_cW;
-  parser::char_embs::BaseModel& char_embs_model;
+  BaseModel& char_embs_model;
 
-  explicit ParserBuilder(Model* model, parser::char_embs::BaseModel& char_embs_model) :
+  explicit ParserBuilder(Model* model, BaseModel& char_embs_model) :
     stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
     action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
     const_lstm_fwd(LAYERS, LSTM_INPUT_DIM, LSTM_INPUT_DIM, model), // used to compose children of a node into a representation of the node
@@ -198,16 +200,6 @@ struct ParserBuilder {
     // TODO should we control the depth of the parse in some way? i.e., as long as there
     // are items in the buffer, we can do an NT operation, which could cause trouble
     return false;
-  }
-
-  Expression compute_word_embedding(ComputationGraph* cg, int wordid) {
-    string w = termdict.Convert(wordid);
-    parser::char_embs::word_t word;
-    for (char c : w) {
-      string s(1, c);
-      word.push_back(chardict.Convert(s));
-    }
-    return char_embs_model.compute_word_embedding(cg, word);
   }
 
   // *** if correct_actions is empty, this runs greedy decoding ***
@@ -279,7 +271,7 @@ struct ParserBuilder {
       int wordid = sent.raw[i]; // this will be equal to unk at dev/test
       if (build_training_graph && singletons.size() > (size_t) wordid && singletons[wordid] && rand01() > 0.5)
         wordid = sent.unk[i];
-      Expression w = compute_word_embedding(hg, wordid);
+      Expression w = char_embs_model.compute_word_embedding(*hg, termdict.Convert(wordid));
 
       vector<Expression> args = {ib, w2l, w}; // learn embeddings
       if (USE_POS) {
@@ -609,10 +601,10 @@ int main(int argc, char** argv) {
 
   cerr << "characters vocab size: " << VOCAB_SIZE << endl;
 
-  parser::char_embs::BaseModel* char_embs_model;
+  BaseModel* char_embs_model;
   string ce_model = conf["char_embeddings_model"].as<string>();
   if (ce_model == "addition") {
-    char_embs_model = new parser::char_embs::AdditionModel(&model, VOCAB_SIZE, INPUT_DIM);
+    char_embs_model = new chr::AdditionModel(model, chardict, INPUT_DIM);
   } else {
     cerr << "Char embeddings model of '" << ce_model << "' is not recognized" << endl;
     abort();

@@ -28,7 +28,7 @@
 
 #include "nt-parser/oracle.h"
 #include "nt-parser/compressed-fstream.h"
-#include "nt-parser/char-embeddings.h"
+#include "nt-parser/embeddings.h"
 
 // dictionaries
 cnn::Dict termdict, ntermdict, adict, posdict, chardict;
@@ -52,6 +52,9 @@ using namespace cnn::expr;
 using namespace cnn;
 using namespace std;
 namespace po = boost::program_options;
+
+using parser::embeddings::BaseModel;
+namespace chr = parser::embeddings::character;
 
 vector<unsigned> possible_actions;
 
@@ -117,9 +120,9 @@ struct ParserBuilder {
   Parameters* p_abias;  // action bias
   Parameters* p_stack_guard;  // end of stack
   Parameters* p_cW;
-  parser::char_embs::BaseModel& char_embs_model;
+  BaseModel& char_embs_model;
 
-  explicit ParserBuilder(Model* model, parser::char_embs::BaseModel& char_embs_model) :
+  explicit ParserBuilder(Model* model, BaseModel& char_embs_model) :
     stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
     term_lstm(LAYERS, INPUT_DIM, HIDDEN_DIM, model),  // sequence of generated terminals
     action_lstm(LAYERS, ACTION_DIM, HIDDEN_DIM, model),
@@ -161,16 +164,6 @@ struct ParserBuilder {
     // you can't reduce after an NT action
     if (is_reduce && prev_a == 'N') return true;
     return false;
-  }
-
-  Expression compute_word_embedding(ComputationGraph* cg, int wordid) {
-    string w = termdict.Convert(wordid);
-    parser::char_embs::word_t word;
-    for (char c : w) {
-      string s(1, c);
-      word.push_back(chardict.Convert(s));
-    }
-    return char_embs_model.compute_word_embedding(cg, word);
   }
 
   // returns parse actions for input sentence (in training just returns the reference)
@@ -339,7 +332,7 @@ struct ParserBuilder {
         }
         assert (wordid != 0);
         stack_content.push_back(termdict.Convert(wordid)); //add the string of the word to the stack
-        Expression w = compute_word_embedding(hg, wordid);
+        Expression w = char_embs_model.compute_word_embedding(*hg, termdict.Convert(wordid));
         terms.push_back(w);
         term_lstm.add_input(w);
         stack.push_back(w);
@@ -539,10 +532,10 @@ int main(int argc, char** argv) {
 
   cerr << "characters vocab size: " << VOCAB_SIZE << endl;
 
-  parser::char_embs::BaseModel* char_embs_model;
+  BaseModel* char_embs_model;
   string ce_model = conf["char_embeddings_model"].as<string>();
   if (ce_model == "addition") {
-    char_embs_model = new parser::char_embs::AdditionModel(&model, VOCAB_SIZE, INPUT_DIM);
+    char_embs_model = new chr::AdditionModel(model, chardict, INPUT_DIM);
   } else {
     cerr << "Char embeddings model of '" << ce_model << "' is not recognized" << endl;
     abort();

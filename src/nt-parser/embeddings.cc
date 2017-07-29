@@ -14,6 +14,7 @@ using std::string;
 using std::vector;
 
 namespace emb = parser::embeddings;
+namespace wrd = parser::embeddings::word;
 namespace chr = parser::embeddings::character;
 
 emb::BaseModel::BaseModel(Model &model, Dict &term_dict, unsigned dim) :
@@ -26,7 +27,15 @@ LookupParameters& emb::BaseModel::get_embeddings() const { return embeddings; }
 Dict& emb::BaseModel::get_term_dict() const { return term_dict; }
 
 
-chr::AdditionModel::AdditionModel(Model &model, Dict& char_dict, unsigned dim) :
+wrd::SimpleLookupModel::SimpleLookupModel(Model &model, Dict &word_dict, unsigned dim) :
+  BaseModel(model, word_dict, dim) {}
+
+Expression wrd::SimpleLookupModel::compute_word_embedding(ComputationGraph &cg, string word) {
+  return lookup(cg, &embeddings, term_dict.Convert(word));
+}
+
+
+chr::AdditionModel::AdditionModel(Model &model, Dict &char_dict, unsigned dim) :
   BaseModel(model, char_dict, dim) {}
 
 Expression chr::AdditionModel::compute_word_embedding(ComputationGraph &cg, string word) {

@@ -27,6 +27,15 @@ namespace parser {
       BaseModel(cnn::Model &model, cnn::Dict &term_dict, unsigned dim);
     };
 
+    namespace word {
+      class SimpleLookupModel : public BaseModel {
+      public:
+        SimpleLookupModel(cnn::Model &model, cnn::Dict &word_dict, unsigned dim);
+        cnn::expr::Expression compute_word_embedding(cnn::ComputationGraph &cg,
+                                                     std::string word) override;
+      };
+    }
+
     namespace character {
       class AdditionModel : public BaseModel {
       public:

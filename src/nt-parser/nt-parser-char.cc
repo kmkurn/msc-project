@@ -31,7 +31,7 @@
 #include "nt-parser/embeddings.h"
 
 // dictionaries
-cnn::Dict termdict, ntermdict, adict, posdict, chardict;
+cnn::Dict termdict, ntermdict, adict, posdict, chardict, unkdict;
 
 volatile bool requested_stop = false;
 unsigned IMPLICIT_REDUCE_AFTER_SHIFT = 0;
@@ -59,6 +59,7 @@ namespace po = boost::program_options;
 
 using parser::embeddings::BaseModel;
 namespace chr = parser::embeddings::character;
+namespace wrd = parser::embeddings::word;
 
 vector<unsigned> possible_actions;
 vector<bool> singletons; // used during training
@@ -89,6 +90,7 @@ void InitCommandLine(int argc, char** argv, po::variables_map* conf) {
     ("report_every", po::value<unsigned>()->default_value(25), "Report on devset every X updates")
     ("patience", po::value<unsigned>()->default_value(10), "How many times to wait before training is stopped early")
     ("char_embeddings_model", po::value<string>()->default_value("addition"), "char embeddings model to use")
+    ("separate_unk_embeddings", "whether to separate embeddings for UNK tokens")
     ("help,h", "Help");
   po::options_description dcmdline_options;
   dcmdline_options.add(opts);
@@ -130,6 +132,7 @@ struct ParserBuilder {
   Parameters* p_stack_guard;  // end of stack
   Parameters* p_cW;
   BaseModel& char_embs_model;
+  BaseModel* unk_embs_model;
 
   explicit ParserBuilder(Model* model, BaseModel& char_embs_model) :
     stack_lstm(LAYERS, LSTM_INPUT_DIM, HIDDEN_DIM, model),
@@ -154,7 +157,8 @@ struct ParserBuilder {
     p_stack_guard(model->add_parameters({LSTM_INPUT_DIM})),
 
     p_cW(model->add_parameters({LSTM_INPUT_DIM, LSTM_INPUT_DIM * 2})),
-    char_embs_model(char_embs_model) {
+    char_embs_model(char_embs_model),
+    unk_embs_model(nullptr) {
     if (IMPLICIT_REDUCE_AFTER_SHIFT) {
       p_ptbias = model->add_parameters({LSTM_INPUT_DIM}); // preterminal bias (used with IMPLICIT_REDUCE_AFTER_SHIFT)
       p_ptW = model->add_parameters({LSTM_INPUT_DIM, 2*LSTM_INPUT_DIM});    // preterminal W (used with IMPLICIT_REDUCE_AFTER_SHIFT)
@@ -271,7 +275,13 @@ struct ParserBuilder {
       int wordid = sent.raw[i]; // this will be equal to unk at dev/test
       if (build_training_graph && singletons.size() > (size_t) wordid && singletons[wordid] && rand01() > 0.5)
         wordid = sent.unk[i];
-      Expression w = char_embs_model.compute_word_embedding(*hg, termdict.Convert(wordid));
+      string word = termdict.Convert(wordid);
+      Expression w;
+      if (unk_embs_model && word.substr(0, 3) == "UNK") {
+        w = unk_embs_model->compute_word_embedding(*hg, word);
+      } else {
+        w = char_embs_model.compute_word_embedding(*hg, word);
+      }
 
       vector<Expression> args = {ib, w2l, w}; // learn embeddings
       if (USE_POS) {
@@ -552,17 +562,23 @@ int main(int argc, char** argv) {
   ntermdict.Freeze();
   posdict.Freeze();
 
-  // populate chardict
+  // populate chardict and unkdict
   for (auto& sent : corpus.sents) {
     for (auto wordid : sent.unk) {
-      for (char ch : termdict.Convert(wordid)) {
-        string s(1, ch);
-        chardict.Convert(s);
+      string word = termdict.Convert(wordid);
+      if (conf.count("separate_unk_embeddings") && word.substr(0, 3) == "UNK") {
+        unkdict.Convert(word);
+      } else {
+        for (char ch : word) {
+          string s(1, ch);
+          chardict.Convert(s);
+        }
       }
     }
   }
   chardict.Freeze();
   chardict.SetUnk("UNK");
+  unkdict.Freeze();
 
   {  // compute the singletons in the parser's training data
     unordered_map<unsigned, unsigned> counts;
@@ -611,6 +627,9 @@ int main(int argc, char** argv) {
   }
 
   ParserBuilder parser(&model, *char_embs_model);
+  if (conf.count("separate_unk_embeddings")) {
+    parser.unk_embs_model = new wrd::SimpleLookupModel(model, unkdict, INPUT_DIM);
+  }
   if (conf.count("model")) {
     ifstream in(conf["model"].as<string>().c_str());
     boost::archive::text_iarchive ia(in);

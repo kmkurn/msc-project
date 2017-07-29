@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 WORK_DIR=`pwd`
 SCRIPT_DIR=`dirname $(readlink -f "$0")`

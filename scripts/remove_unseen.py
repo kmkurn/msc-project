@@ -28,6 +28,7 @@ def get_unk_tokens(unkified):
 
 
 def has_no_unseen(nt_labels, unk_tokens, gen_unk_tokens, parsed_line, oracle, gen_oracle):
+    parsed_line = parsed_line.decode('utf-8')
     no_unseen_nt = all(label in nt_labels
                        for label in get_nt_labels(Tree.fromstring(parsed_line)))
     no_unseen_unk = all(unk in unk_tokens

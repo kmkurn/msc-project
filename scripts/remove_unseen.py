@@ -61,7 +61,7 @@ if __name__ == '__main__':
     with open(args.train_file) as f:
         nt_labels = set()
         for line in f:
-            nt_labels.update(get_nt_labels(Tree.fromstring(line.strip())))
+            nt_labels.update(get_nt_labels(Tree.fromstring(line.strip().decode('utf-8'))))
 
     if args.save_nt_to is not None:
         with open(args.save_nt_to, 'w') as f:

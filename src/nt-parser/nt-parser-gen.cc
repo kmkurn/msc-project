@@ -686,7 +686,7 @@ int main(int argc, char** argv) {
       llh = trs = right = words = 0;
       static int logc = 0;
       ++logc;
-      if (logc % generate_every == 1) {
+      if (logc > 1 && logc % generate_every == 1) {
         // generate random sample
         ComputationGraph cg;
         double x;

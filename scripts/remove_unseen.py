@@ -14,7 +14,7 @@ def is_leaf(tree):
 
 
 def get_nt_labels(tree):
-    if is_leaf(tree):
+    if is_leaf(tree) or (len(tree) == 1 and is_leaf(tree[0])):
         return set()
 
     res = {tree.label()}

@@ -14,7 +14,7 @@ This repository contains an implementation for my final project [*Exploring Recu
 
 ## Python package installation
 
-The `pypkg` package needs to be installed. Run `pip -e .` from the project root directory.
+The `pypkg` package needs to be installed. Run `pip install -e .` from the project root directory.
 
 ## Build instructions
 

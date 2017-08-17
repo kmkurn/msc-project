@@ -12,6 +12,10 @@ This repository contains an implementation for my final project *Exploring Recur
  * [EVALB](http://nlp.cs.nyu.edu/evalb/) (latest version; please put the EVALB folder under `src` directory)
  * [brown-cluster](https://github.com/percyliang/brown-cluster) (version 1.3)
 
+## Python package installation
+
+The `pypkg` package needs to be installed. Run `pip -e .` from the project root directory.
+
 ## Build instructions
 
     mkdir src/build

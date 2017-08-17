@@ -7,6 +7,6 @@ setup(
     description='RNNG with character embeddings',
     author='Kemal Kurniawan',
     author_email='kemal@kkurniawan.com',
-    license='MIT',
+    license='Apache 2.0',
     packages=find_packages()
 )

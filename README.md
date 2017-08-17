@@ -1,4 +1,4 @@
-# Recurrent Neural Network Grammars for Low-Resource Languages
+# Recurrent Neural Network Grammars for Parsing Low-Resource Languages
 
 This repository contains an implementation for my final project *Exploring Recurrent Neural Network Grammars for Parsing Low-Resource Languages*, MSc in Artificial Intelligence, University of Edinburgh. The implementation extended the [original recurrent neural network grammars' by Dyer et al. (2016)](https://github.com/clab/rnng/). Before put under this repository, their code was forked and modified under [this repository](http://github.com/kmkurn/rnng). Any changes from the original code are thus can be viewed in that repository's commit history. This `README` file is also largely based on theirs.
 

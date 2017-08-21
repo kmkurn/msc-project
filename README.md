@@ -174,11 +174,13 @@ The file `llh.txt` would contain the final language modeling perplexity after ma
 The file `parsing_result.txt` contains the final parsing accuracy using EVALB.
 
 ## License
-This software is released under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+This software is released under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Changes
 
 Several major changes has been added from the [original implementation by Dyer et al.](https://github.com/clab/rnng/):
 
-- Implementing pretrained word embeddings feature to the generative model
-- Implementing RNNGs with character embeddings
+- Early stopping (`src/nt-parser/nt-parser.cc`, `src/nt-parser/nt-parser-gen.cc`)
+- Pretrained word embeddings feature of the generative model (`src/nt-parser/nt-parser-gen.cc`, `src/CMakeLists.txt`)
+- RNNGs with character embeddings (`src/nt-parser/nt-parser-char.cc`, `src/nt-parser/nt-parser-gen-char.cc`, `src/nt-parser/embeddings.h`, `src/nt-parser/embeddings.cc`, `src/nt-parser/CMakeLists.txt`)
